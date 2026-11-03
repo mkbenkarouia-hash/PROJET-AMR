@@ -1,6 +1,6 @@
 # 🤖 RAIA AMR 4.0 — Robot Mobile Autonome Industriel
 ### Système de Navigation Autonome Inter-Lignes de Production CMS & Borne de Recharge Industrielle MiR Charge
-**Projet HMIDA — ISET Bizerte | Rapport de Référence RAIA 01.26**
+ ISET Bizerte | Rapport de Référence RAIA 01.26**
 
 ---
 
@@ -271,5 +271,4 @@ Les tests de validation en boucle fermée confirment la fiabilité totale du sys
 
 ## 👥 Auteur & Remerciements
 - **Projet** : RAIA AMR 4.0 — Intralogistique & Navigation Autonome Industrielle.
-- **Cadre** : Projet HMIDA — ISET Bizerte.
 - **Référence** : Document RAIA 01.26.
