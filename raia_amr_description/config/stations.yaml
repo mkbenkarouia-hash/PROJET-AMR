@@ -1,0 +1,56 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  CONFIGURATION CENTRALISÉE DES STATIONS INDUSTRIELLES — RAIA AMR
+#  Atelier Industriel CMS 4.0 | factory_workshop.world
+#  Coordonnées exactes issues de la modélisation Gazebo & Map OGM
+# ═══════════════════════════════════════════════════════════════════════
+
+frame_id: "map"
+
+stations:
+  station_recharge:
+    id: "ST0"
+    name: "Station de Recharge MiR Charge (Docking Sud)"
+    description: "Borne industrielle MiR Charge 24V et position de veille initiale de l'AMR"
+    x: 0.0
+    y: -3.80
+    theta: 1.5708               # rad (+90° face à l'allée centrale)
+
+  station_serigraphie:
+    id: "ST1"
+    name: "Ligne 1 - Sérigraphie MPM Momentum (Prise PCB)"
+    description: "Poste d'impression de pâte à braser - Récupération de la carte PCB"
+    x: 1.80
+    y: 0.65
+    theta: 1.5708               # rad (+90° face à la ligne MPM)
+
+  station_convoyeur:
+    id: "ST2"
+    name: "Ligne 2 - Quai Convoyeur & Transfert PCB"
+    description: "Convoyeur automatique d'acheminement et dépose de la carte PCB"
+    x: -1.80
+    y: 0.65
+    theta: -1.5708              # rad (-90° face au quai de transfert et vers le retour borne)
+
+  station_refusion:
+    id: "ST3"
+    name: "Ligne 3 - Four Refusion ICT"
+    description: "Poste de brasage à refusion thermique sous azote"
+    x: 1.8
+    y: -0.65
+    theta: -1.5708              # rad (-90° face au four)
+
+  station_dechargement:
+    id: "ST4"
+    name: "Station 4 - Zone Logistique & Palettes PCB"
+    description: "Zone de stockage intermédiaire et déchargement des racks de PCB finis"
+    x: -2.0
+    y: -0.65
+    theta: -1.5708              # rad (-90° face aux palettes)
+
+  station_chargement:
+    id: "ST5"
+    name: "Station 5 - Quai Convoyeur Est & Alimentation"
+    description: "Convoyeur à rouleaux motorisé d'approvisionnement des composants bruts"
+    x: 2.3
+    y: 0.0
+    theta: 0.0                  # rad (0° face au convoyeur Est)

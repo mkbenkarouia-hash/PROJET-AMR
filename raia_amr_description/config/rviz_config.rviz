@@ -1,0 +1,62 @@
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Plane: XY
+      Cell Size: 1.0
+      Plane Cell Count: 20
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Visual Enabled: true
+      Collision Enabled: false
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Enabled: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /scan
+      Size (m): 0.05
+      Style: Flat Squares
+  Global Options:
+    Fixed Frame: base_footprint
+    Frame Rate: 30
+  Tools:
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+    - Class: rviz_default_plugins/SetInitialPose
+      Topic:
+        Value: /initialpose
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Value: /goal_pose
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 2.2
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0.2
+      Pitch: 0.5
+      Yaw: 0.8

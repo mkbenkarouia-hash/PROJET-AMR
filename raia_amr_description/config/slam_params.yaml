@@ -1,0 +1,71 @@
+slam_toolbox:
+  ros__parameters:
+
+    # ── Horloge de simulation ──────────────────────────────────────────────
+    use_sim_time: true
+
+    # ── Plugin SLAM : mode cartographie en ligne ───────────────────────────
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ── Repères (Frames) ── adaptés au modèle URDF raia_amr ───────────────
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_footprint          # repère racine de l'AMR
+    scan_topic: /scan                   # topic LiDAR publié par Gazebo
+
+    # ── Mode de fonctionnement ─────────────────────────────────────────────
+    mode: mapping                       # 'mapping' ou 'localization'
+
+    # ── Paramètres de scan matching ────────────────────────────────────────
+    # LiDAR : 360 rayons, 10 Hz, portée 0.15 – 12 m
+    minimum_travel_distance: 0.10       # m  – mise à jour toutes les 10 cm
+    minimum_travel_heading: 0.087       # rad – ~5° minimum de rotation
+    minimum_time_interval: 0.5          # s   – intervalle minimal entre scans
+    transform_timeout: 0.2              # s   – délai max pour /tf
+    tf_buffer_duration: 30.0            # s   – durée du buffer TF
+
+    # ── Résolution et taille de la grille d'occupation ────────────────────
+    resolution: 0.05                    # m/cellule – standard industrie
+    max_laser_range: 12.0               # m – aligné avec <max> dans lidar.xacro
+    minimum_laser_range: 0.15           # m – aligné avec <min> dans lidar.xacro
+
+    # ── Optimisation du graphe de poses ───────────────────────────────────
+    do_loop_closing: true
+    loop_search_maximum_distance: 4.0   # m – distance de détection de boucle
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+
+    # ── Corrélation scan-to-map ────────────────────────────────────────────
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+
+    # ── Corrélation pour la détection de boucles ──────────────────────────
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # ── Filtre de distance ─────────────────────────────────────────────────
+    distance_variance_penalty: 0.5
+    angle_variance_penalty: 1.0
+    fine_search_angle_offset: 0.00349   # rad – résolution fine angulaire
+    coarse_search_angle_offset: 0.349   # rad – résolution grossière
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true
+
+    # ── Persistance et sérialisation ──────────────────────────────────────
+    map_update_interval: 5.0            # s – fréquence de publication /map
+    map_file_name: /tmp/raia_map        # chemin par défaut sauvegarde SLAM
+    map_start_at_dock: false
+    debug_logging: false
+    throttle_scans: 1                   # traiter 1 scan sur N (1 = tous)
+    stack_size_to_use: 40000000         # octets – pile ceres 40 MB

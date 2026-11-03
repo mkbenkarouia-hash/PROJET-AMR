@@ -1,0 +1,40 @@
+# ==============================================================================
+#  GITIGNORE — RAIA AMR 4.0 INDUSTRIAL AUTONOMOUS MOBILE ROBOT
+# ==============================================================================
+
+# Python virtual environment & cache
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# ROS 2 & Colcon build directories
+build/
+install/
+log/
+colcon.meta
+
+# Temporary runtime & system logs
+*.log
+*.bak
+*.swp
+*~
+/tmp/*
+fastrtps_*
+sem.fastrtps_*
+
+# IDE & Editor specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Scratch / Internal test files
+scratch/
+raia_amr_description/scratch/

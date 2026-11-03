@@ -1,0 +1,1083 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="factory_workshop">
+
+    <!-- ============================================================== -->
+    <!--  ATELIER INDUSTRIEL FUBA - FABRICATION ET INSPECTION DE PCB   -->
+    <!--  Projet RAIA 01.26 | Environnement Gazebo réaliste            -->
+    <!--  Remplacement des 3 formes géométriques primitives            -->
+    <!-- ============================================================== -->
+
+    <!-- Optimisation graphique pour fluidité maximale sous WSL2 (FPS élevé) -->
+    <scene>
+      <shadows>false</shadows>
+      <grid>true</grid>
+    </scene>
+
+    <!-- Éclairage solaire autonome (sans ombres pour gain FPS) -->
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 12 0 0 0</pose>
+      <diffuse>0.85 0.85 0.88 1</diffuse>
+      <specular>0.25 0.25 0.25 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.4 0.2 -0.9</direction>
+    </light>
+
+    <!-- Éclairage d'ambiance d'atelier (néons industriels plafonniers) -->
+    <light type="point" name="overhead_lamp_1">
+      <cast_shadows>false</cast_shadows>
+      <pose>-2 2 4.5 0 0 0</pose>
+      <diffuse>0.5 0.52 0.55 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>20</range>
+        <constant>0.5</constant>
+        <linear>0.05</linear>
+        <quadratic>0.01</quadratic>
+      </attenuation>
+    </light>
+
+    <light type="point" name="overhead_lamp_2">
+      <cast_shadows>false</cast_shadows>
+      <pose>2 -2 4.5 0 0 0</pose>
+      <diffuse>0.5 0.52 0.55 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>20</range>
+        <constant>0.5</constant>
+        <linear>0.05</linear>
+        <quadratic>0.01</quadratic>
+      </attenuation>
+    </light>
+
+    <!-- Sol de l'atelier : Résine époxy industrielle grise -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.82 0.84 0.86 1</ambient>
+            <diffuse>0.82 0.84 0.86 1</diffuse>
+            <specular>0.3 0.3 0.32 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Physique ODE optimisée temps réel -->
+    <physics type="ode">
+      <real_time_update_rate>250.0</real_time_update_rate>
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ============================================================== -->
+    <!--  ENCLOS DE L'ATELIER (MURS PERIMETRIQUES 10m x 10m x 2.6m)     -->
+    <!-- ============================================================== -->
+
+    <!-- Mur Nord -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>0 5 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>10 0.25 2.6</size></box></geometry>
+        </collision>
+        <visual name="wall_face">
+          <geometry><box><size>10 0.25 2.6</size></box></geometry>
+          <material>
+            <ambient>0.92 0.93 0.94 1</ambient>
+            <diffuse>0.92 0.93 0.94 1</diffuse>
+          </material>
+        </visual>
+        <visual name="baseboard">
+          <pose>0 -0.13 -1.2 0 0 0</pose>
+          <geometry><box><size>10 0.02 0.2</size></box></geometry>
+          <material><ambient>0.25 0.28 0.32 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Mur Sud -->
+    <model name="wall_south">
+      <static>true</static>
+      <pose>0 -5 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>10 0.25 2.6</size></box></geometry>
+        </collision>
+        <visual name="wall_face">
+          <geometry><box><size>10 0.25 2.6</size></box></geometry>
+          <material>
+            <ambient>0.92 0.93 0.94 1</ambient>
+            <diffuse>0.92 0.93 0.94 1</diffuse>
+          </material>
+        </visual>
+        <visual name="baseboard">
+          <pose>0 0.13 -1.2 0 0 0</pose>
+          <geometry><box><size>10 0.02 0.2</size></box></geometry>
+          <material><ambient>0.25 0.28 0.32 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Mur Est -->
+    <model name="wall_east">
+      <static>true</static>
+      <pose>5 0 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.25 10 2.6</size></box></geometry>
+        </collision>
+        <visual name="wall_face">
+          <geometry><box><size>0.25 10 2.6</size></box></geometry>
+          <material>
+            <ambient>0.92 0.93 0.94 1</ambient>
+            <diffuse>0.92 0.93 0.94 1</diffuse>
+          </material>
+        </visual>
+        <visual name="baseboard">
+          <pose>-0.13 0 -1.2 0 0 0</pose>
+          <geometry><box><size>0.02 10 0.2</size></box></geometry>
+          <material><ambient>0.25 0.28 0.32 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Mur Ouest -->
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-5 0 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.25 10 2.6</size></box></geometry>
+        </collision>
+        <visual name="wall_face">
+          <geometry><box><size>0.25 10 2.6</size></box></geometry>
+          <material>
+            <ambient>0.92 0.93 0.94 1</ambient>
+            <diffuse>0.92 0.93 0.94 1</diffuse>
+          </material>
+        </visual>
+        <visual name="baseboard">
+          <pose>0.13 0 -1.2 0 0 0</pose>
+          <geometry><box><size>0.02 10 0.2</size></box></geometry>
+          <material><ambient>0.25 0.28 0.32 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Piliers structuraux IPN de l'atelier -->
+    <model name="pillar_nw">
+      <static>true</static>
+      <pose>-2.5 4.8 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.3 0.3 2.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.3 0.3 2.6</size></box></geometry>
+          <material><ambient>0.28 0.35 0.42 1</ambient><diffuse>0.28 0.35 0.42 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pillar_ne">
+      <static>true</static>
+      <pose>2.5 4.8 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.3 0.3 2.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.3 0.3 2.6</size></box></geometry>
+          <material><ambient>0.28 0.35 0.42 1</ambient><diffuse>0.28 0.35 0.42 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pillar_sw">
+      <static>true</static>
+      <pose>-2.5 -4.8 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.3 0.3 2.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.3 0.3 2.6</size></box></geometry>
+          <material><ambient>0.28 0.35 0.42 1</ambient><diffuse>0.28 0.35 0.42 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pillar_se">
+      <static>true</static>
+      <pose>2.5 -4.8 1.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.3 0.3 2.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.3 0.3 2.6</size></box></geometry>
+          <material><ambient>0.28 0.35 0.42 1</ambient><diffuse>0.28 0.35 0.42 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  STATION 1 : SERIGRAPHIE & CHARGEMENT (MPM MOMENTUM II ELITE) -->
+    <!--  Remplace l'ancien obstacle rectangulaire pcb_station_1        -->
+    <!--  Photo Fig. 20 (page 43 du rapport RAIA)                      -->
+    <!-- ============================================================== -->
+    <model name="station_mpm_momentum_serigraphie">
+      <static>true</static>
+      <pose>2.8 2.2 0 0 0 -1.5708</pose>
+      <link name="link">
+        <!-- Boîte de collision globale exacte pour le LiDAR et la physique -->
+        <collision name="collision_base">
+          <pose>0 0 0.72 0 0 0</pose>
+          <geometry><box><size>1.5 1.25 1.45</size></box></geometry>
+        </collision>
+
+        <!-- Bâti inférieur machine blanc industriel -->
+        <visual name="base_chassis">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><box><size>1.5 1.2 0.9</size></box></geometry>
+          <material><ambient>0.93 0.94 0.95 1</ambient><diffuse>0.93 0.94 0.95 1</diffuse></material>
+        </visual>
+
+        <!-- Capot supérieur avec chanfrein noir/anthracite -->
+        <visual name="upper_hood">
+          <pose>0 0 1.15 0 0 0</pose>
+          <geometry><box><size>1.46 1.1 0.5</size></box></geometry>
+          <material><ambient>0.15 0.17 0.2 1</ambient><diffuse>0.15 0.17 0.2 1</diffuse></material>
+        </visual>
+
+        <!-- Fenêtre d'inspection sérigraphie en verre teinté -->
+        <visual name="inspection_glass">
+          <pose>0 -0.56 1.15 0 0 0</pose>
+          <geometry><box><size>1.05 0.03 0.32</size></box></geometry>
+          <material><ambient>0.05 0.12 0.18 1</ambient><diffuse>0.05 0.12 0.18 1</diffuse><specular>0.8 0.8 0.9 1</specular></material>
+        </visual>
+
+        <!-- Bandeau d'accent bleu MPM -->
+        <visual name="mpm_accent_stripe">
+          <pose>0 -0.61 0.82 0 0 0</pose>
+          <geometry><box><size>1.48 0.02 0.06</size></box></geometry>
+          <material><ambient>0.05 0.3 0.65 1</ambient><diffuse>0.05 0.3 0.65 1</diffuse></material>
+        </visual>
+
+        <!-- Console opérateur latérale (bras support) -->
+        <visual name="screen_arm">
+          <pose>0.82 -0.2 1.05 0 0 0</pose>
+          <geometry><box><size>0.2 0.06 0.06</size></box></geometry>
+          <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material>
+        </visual>
+
+        <!-- Écran de contrôle MPM Momentum -->
+        <visual name="operator_screen_frame">
+          <pose>0.88 -0.45 1.25 0 0 0</pose>
+          <geometry><box><size>0.48 0.04 0.38</size></box></geometry>
+          <material><ambient>0.12 0.12 0.14 1</ambient><diffuse>0.12 0.12 0.14 1</diffuse></material>
+        </visual>
+        <visual name="operator_screen_display">
+          <pose>0.88 -0.48 1.25 0 0 0</pose>
+          <geometry><box><size>0.44 0.01 0.34</size></box></geometry>
+          <material><ambient>0.08 0.45 0.82 1</ambient><diffuse>0.08 0.45 0.82 1</diffuse><emissive>0.05 0.2 0.4 1</emissive></material>
+        </visual>
+        <visual name="keyboard_tray">
+          <pose>0.88 -0.48 0.95 0 0 0</pose>
+          <geometry><box><size>0.46 0.22 0.03</size></box></geometry>
+          <material><ambient>0.3 0.32 0.35 1</ambient><diffuse>0.3 0.32 0.35 1</diffuse></material>
+        </visual>
+
+        <!-- Bouton Arrêt d'Urgence (E-stop) -->
+        <visual name="estop_box">
+          <pose>0.62 -0.62 0.88 0 0 0</pose>
+          <geometry><box><size>0.08 0.04 0.08</size></box></geometry>
+          <material><ambient>0.95 0.8 0.0 1</ambient><diffuse>0.95 0.8 0.0 1</diffuse></material>
+        </visual>
+        <visual name="estop_mushroom">
+          <pose>0.62 -0.65 0.88 1.5708 0 0</pose>
+          <geometry><cylinder><radius>0.025</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.85 0.05 0.05 1</ambient><diffuse>0.85 0.05 0.05 1</diffuse></material>
+        </visual>
+
+        <!-- Colonne lumineuse Andon (Mât) -->
+        <visual name="andon_pole">
+          <pose>-0.65 0.4 1.6 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.4</length></cylinder></geometry>
+          <material><ambient>0.6 0.6 0.65 1</ambient><diffuse>0.6 0.6 0.65 1</diffuse></material>
+        </visual>
+        <!-- Andon Rouge -->
+        <visual name="andon_red">
+          <pose>-0.65 0.4 1.95 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        </visual>
+        <!-- Andon Orange -->
+        <visual name="andon_amber">
+          <pose>-0.65 0.4 1.87 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.0 1</ambient><diffuse>0.9 0.6 0.0 1</diffuse></material>
+        </visual>
+        <!-- Andon Vert actif -->
+        <visual name="andon_green">
+          <pose>-0.65 0.4 1.79 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.1 0.9 0.2 1</ambient><diffuse>0.1 0.9 0.2 1</diffuse><emissive>0.2 0.8 0.3 1</emissive></material>
+        </visual>
+
+        <!-- Convoyeur d'interface de transfert PCB -->
+        <visual name="pcb_input_slot">
+          <pose>-0.76 0 0.85 0 0 0</pose>
+          <geometry><box><size>0.03 0.4 0.1</size></box></geometry>
+          <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.05 0.05 0.05 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  STATION 2 : TESTEUR SONDES MOBILES & VISION IA (SPEA 4050)   -->
+    <!--  Remplace l'ancien obstacle carré/rectangle pcb_station_2      -->
+    <!--  Banc d'inspection optique temps réel YOLOv8 (rapport RAIA)    -->
+    <!-- ============================================================== -->
+    <model name="station_spea_4050_testeur_ia">
+      <static>true</static>
+      <pose>-2.8 2.2 0 0 0 -1.5708</pose>
+      <link name="link">
+        <!-- Boîte de collision globale pour physique et LiDAR -->
+        <collision name="collision_base">
+          <pose>0 0 0.8 0 0 0</pose>
+          <geometry><box><size>1.5 1.35 1.6</size></box></geometry>
+        </collision>
+
+        <!-- Bâti vertical principal SPEA 4050 blanc crème -->
+        <visual name="spea_main_body">
+          <pose>0 0 0.77 0 0 0</pose>
+          <geometry><box><size>1.4 1.25 1.55</size></box></geometry>
+          <material><ambient>0.94 0.95 0.96 1</ambient><diffuse>0.94 0.95 0.96 1</diffuse></material>
+        </visual>
+
+        <!-- Chambre centrale de test à sondes mobiles -->
+        <visual name="test_chamber_recess">
+          <pose>0 -0.55 0.8 0 0 0</pose>
+          <geometry><box><size>1.05 0.16 0.65</size></box></geometry>
+          <material><ambient>0.12 0.14 0.16 1</ambient><diffuse>0.12 0.14 0.16 1</diffuse></material>
+        </visual>
+
+        <!-- Fixture / Plateau de circuit imprimé sous test (vert PCB) -->
+        <visual name="pcb_under_test">
+          <pose>0 -0.45 0.65 0 0 0</pose>
+          <geometry><box><size>0.6 0.35 0.03</size></box></geometry>
+          <material><ambient>0.1 0.55 0.25 1</ambient><diffuse>0.1 0.55 0.25 1</diffuse></material>
+        </visual>
+
+        <!-- Pont de mesure robotisé (portique sondes volantes) -->
+        <visual name="flying_probes_gantry">
+          <pose>0 -0.45 0.95 0 0 0</pose>
+          <geometry><box><size>0.85 0.05 0.05</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+
+        <!-- Caméra industrielle d'inspection optique (IA YOLOv8) -->
+        <visual name="vision_ai_camera">
+          <pose>0 -0.45 1.05 0 0 0</pose>
+          <geometry><box><size>0.08 0.1 0.1</size></box></geometry>
+          <material><ambient>0.1 0.1 0.12 1</ambient><diffuse>0.1 0.1 0.12 1</diffuse></material>
+        </visual>
+        <visual name="camera_lens">
+          <pose>0 -0.45 0.98 0 0 0</pose>
+          <geometry><cylinder><radius>0.02</radius><length>0.04</length></cylinder></geometry>
+          <material><ambient>0.2 0.3 0.4 1</ambient><diffuse>0.2 0.3 0.4 1</diffuse></material>
+        </visual>
+
+        <!-- Grand écran principal de test SPEA 4050 -->
+        <visual name="main_screen_frame">
+          <pose>0 -0.48 1.38 0 0 0</pose>
+          <geometry><box><size>0.78 0.04 0.48</size></box></geometry>
+          <material><ambient>0.1 0.1 0.12 1</ambient><diffuse>0.1 0.1 0.12 1</diffuse></material>
+        </visual>
+        <visual name="main_screen_display">
+          <pose>0 -0.51 1.38 0 0 0</pose>
+          <geometry><box><size>0.74 0.01 0.44</size></box></geometry>
+          <material><ambient>0.05 0.4 0.75 1</ambient><diffuse>0.05 0.4 0.75 1</diffuse><emissive>0.05 0.25 0.5 1</emissive></material>
+        </visual>
+
+        <!-- Écran secondaire supervision IA (Défauts YOLOv8 503/521/522) -->
+        <visual name="aux_screen_frame">
+          <pose>0.65 -0.38 1.35 0 0 0</pose>
+          <geometry><box><size>0.36 0.04 0.32</size></box></geometry>
+          <material><ambient>0.12 0.12 0.14 1</ambient><diffuse>0.12 0.12 0.14 1</diffuse></material>
+        </visual>
+        <visual name="aux_screen_display">
+          <pose>0.65 -0.41 1.35 0 0 0</pose>
+          <geometry><box><size>0.32 0.01 0.28</size></box></geometry>
+          <material><ambient>0.1 0.6 0.4 1</ambient><diffuse>0.1 0.6 0.4 1</diffuse><emissive>0.05 0.3 0.2 1</emissive></material>
+        </visual>
+
+        <!-- Colonne lumineuse Andon SPEA -->
+        <visual name="andon_pole">
+          <pose>-0.6 0.4 1.7 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.4</length></cylinder></geometry>
+          <material><ambient>0.6 0.6 0.65 1</ambient><diffuse>0.6 0.6 0.65 1</diffuse></material>
+        </visual>
+        <visual name="andon_red">
+          <pose>-0.6 0.4 2.05 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="andon_amber">
+          <pose>-0.6 0.4 1.97 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.0 1</ambient><diffuse>0.9 0.6 0.0 1</diffuse></material>
+        </visual>
+        <visual name="andon_green">
+          <pose>-0.6 0.4 1.89 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.1 0.9 0.2 1</ambient><diffuse>0.1 0.9 0.2 1</diffuse><emissive>0.2 0.8 0.3 1</emissive></material>
+        </visual>
+
+        <!-- Bouton Arrêt d'Urgence frontal -->
+        <visual name="estop_box">
+          <pose>-0.58 -0.64 0.9 0 0 0</pose>
+          <geometry><box><size>0.08 0.04 0.08</size></box></geometry>
+          <material><ambient>0.95 0.8 0.0 1</ambient><diffuse>0.95 0.8 0.0 1</diffuse></material>
+        </visual>
+        <visual name="estop_button">
+          <pose>-0.58 -0.67 0.9 1.5708 0 0</pose>
+          <geometry><cylinder><radius>0.025</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.85 0.05 0.05 1</ambient><diffuse>0.85 0.05 0.05 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  STATION 3 : FOUR DE REFUSION & TRAITEMENT THERMIQUE (I.C.T)  -->
+    <!--  Remplace l'ancienne station et complète la ligne FUBA         -->
+    <!--  Four Lead-Free de durcissement et refusion (page 42 rapport)  -->
+    <!-- ============================================================== -->
+    <model name="station_ict_four_refusion">
+      <static>true</static>
+      <pose>2.8 -2.2 0 0 0 1.5708</pose>
+      <link name="link">
+        <!-- Collision englobante pour physique et LiDAR -->
+        <collision name="collision_base">
+          <pose>0 0 0.72 0 0 0</pose>
+          <geometry><box><size>2.5 1.15 1.45</size></box></geometry>
+        </collision>
+
+        <!-- Bâti inférieur en acier lourd ivoire/blanc -->
+        <visual name="lower_body">
+          <pose>0 0 0.42 0 0 0</pose>
+          <geometry><box><size>2.4 1.05 0.84</size></box></geometry>
+          <material><ambient>0.92 0.93 0.94 1</ambient><diffuse>0.92 0.93 0.94 1</diffuse></material>
+        </visual>
+
+        <!-- Capot supérieur tunnel thermique bombé noir graphite -->
+        <visual name="tunnel_hood">
+          <pose>0 0 1.05 0 0 0</pose>
+          <geometry><box><size>2.3 0.95 0.45</size></box></geometry>
+          <material><ambient>0.16 0.18 0.22 1</ambient><diffuse>0.16 0.18 0.22 1</diffuse></material>
+        </visual>
+
+        <!-- Fentes de tunnel de convoyage (entrée / sortie) -->
+        <visual name="tunnel_inlet">
+          <pose>-1.16 0 0.85 0 0 0</pose>
+          <geometry><box><size>0.06 0.45 0.14</size></box></geometry>
+          <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.05 0.05 0.05 1</diffuse></material>
+        </visual>
+        <visual name="tunnel_outlet">
+          <pose>1.16 0 0.85 0 0 0</pose>
+          <geometry><box><size>0.06 0.45 0.14</size></box></geometry>
+          <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.05 0.05 0.05 1</diffuse></material>
+        </visual>
+
+        <!-- Cheminées d'extraction des vapeurs de soudure -->
+        <visual name="chimney_1">
+          <pose>-0.6 0 1.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.35</length></cylinder></geometry>
+          <material><ambient>0.7 0.72 0.75 1</ambient><diffuse>0.7 0.72 0.75 1</diffuse></material>
+        </visual>
+        <visual name="chimney_2">
+          <pose>0.6 0 1.45 0 0 0</pose>
+          <geometry><cylinder><radius>0.08</radius><length>0.35</length></cylinder></geometry>
+          <material><ambient>0.7 0.72 0.75 1</ambient><diffuse>0.7 0.72 0.75 1</diffuse></material>
+        </visual>
+
+        <!-- Pupitre de supervision thermique I.C.T -->
+        <visual name="control_stand">
+          <pose>1.15 -0.45 0.95 0 0 0</pose>
+          <geometry><box><size>0.08 0.08 0.5</size></box></geometry>
+          <material><ambient>0.25 0.25 0.28 1</ambient><diffuse>0.25 0.25 0.28 1</diffuse></material>
+        </visual>
+        <visual name="control_screen_frame">
+          <pose>1.15 -0.55 1.3 0 0 0</pose>
+          <geometry><box><size>0.42 0.04 0.32</size></box></geometry>
+          <material><ambient>0.12 0.12 0.14 1</ambient><diffuse>0.12 0.12 0.14 1</diffuse></material>
+        </visual>
+        <visual name="control_screen_display">
+          <pose>1.15 -0.58 1.3 0 0 0</pose>
+          <geometry><box><size>0.38 0.01 0.28</size></box></geometry>
+          <material><ambient>0.85 0.45 0.1 1</ambient><diffuse>0.85 0.45 0.1 1</diffuse><emissive>0.35 0.15 0.02 1</emissive></material>
+        </visual>
+
+        <!-- Colonne lumineuse Andon I.C.T -->
+        <visual name="andon_pole">
+          <pose>1.15 0.35 1.5 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.4</length></cylinder></geometry>
+          <material><ambient>0.6 0.6 0.65 1</ambient><diffuse>0.6 0.6 0.65 1</diffuse></material>
+        </visual>
+        <visual name="andon_green">
+          <pose>1.15 0.35 1.75 0 0 0</pose>
+          <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+          <material><ambient>0.1 0.9 0.2 1</ambient><diffuse>0.1 0.9 0.2 1</diffuse><emissive>0.2 0.8 0.3 1</emissive></material>
+        </visual>
+
+        <!-- Logo / Badge I.C.T LEAD-FREE -->
+        <visual name="lead_free_band">
+          <pose>0 -0.54 0.7 0 0 0</pose>
+          <geometry><box><size>0.8 0.02 0.08</size></box></geometry>
+          <material><ambient>0.1 0.4 0.45 1</ambient><diffuse>0.1 0.4 0.45 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  ZONE LOGISTIQUE : PALETTE EUROPE, MAGASINS PCB & FUTS         -->
+    <!--  Remplace l'ancien cylindre abstrait (pallet_obstacle)         -->
+    <!--  Composants CMS et racks de circuits imprimés prêts au chargement -->
+    <!-- ============================================================== -->
+    <model name="zone_logistique_palette_pcb">
+      <static>true</static>
+      <pose>-2.8 -2.2 0 0 0 0</pose>
+      <link name="link">
+        <!-- Collision globale pour la palette et son chargement -->
+        <collision name="collision_all">
+          <pose>0 0 0.5 0 0 0</pose>
+          <geometry><box><size>1.35 1.05 1.0</size></box></geometry>
+        </collision>
+
+        <!-- Palette bois Euro (semelles) -->
+        <visual name="pallet_runners">
+          <pose>0 0 0.05 0 0 0</pose>
+          <geometry><box><size>1.2 0.8 0.1</size></box></geometry>
+          <material><ambient>0.72 0.56 0.38 1</ambient><diffuse>0.72 0.56 0.38 1</diffuse></material>
+        </visual>
+        <!-- Planches supérieures de la palette -->
+        <visual name="pallet_top_deck">
+          <pose>0 0 0.12 0 0 0</pose>
+          <geometry><box><size>1.2 0.8 0.04</size></box></geometry>
+          <material><ambient>0.78 0.62 0.42 1</ambient><diffuse>0.78 0.62 0.42 1</diffuse></material>
+        </visual>
+
+        <!-- Magasin vertical de stockage PCB 1 (Aluminium anodisé + circuits verts) -->
+        <visual name="pcb_rack_1">
+          <pose>-0.3 -0.15 0.42 0 0 0</pose>
+          <geometry><box><size>0.38 0.35 0.55</size></box></geometry>
+          <material><ambient>0.75 0.76 0.78 1</ambient><diffuse>0.75 0.76 0.78 1</diffuse></material>
+        </visual>
+        <visual name="pcb_cards_1">
+          <pose>-0.3 -0.15 0.42 0 0 0</pose>
+          <geometry><box><size>0.34 0.31 0.5</size></box></geometry>
+          <material><ambient>0.12 0.55 0.22 1</ambient><diffuse>0.12 0.55 0.22 1</diffuse></material>
+        </visual>
+
+        <!-- Magasin vertical de stockage PCB 2 -->
+        <visual name="pcb_rack_2">
+          <pose>0.15 -0.15 0.42 0 0 0</pose>
+          <geometry><box><size>0.38 0.35 0.55</size></box></geometry>
+          <material><ambient>0.75 0.76 0.78 1</ambient><diffuse>0.75 0.76 0.78 1</diffuse></material>
+        </visual>
+        <visual name="pcb_cards_2">
+          <pose>0.15 -0.15 0.42 0 0 0</pose>
+          <geometry><box><size>0.34 0.31 0.5</size></box></geometry>
+          <material><ambient>0.12 0.55 0.22 1</ambient><diffuse>0.12 0.55 0.22 1</diffuse></material>
+        </visual>
+
+        <!-- Bac gerbable de composants CMS (bleu industriel) -->
+        <visual name="smd_parts_tote">
+          <pose>-0.2 0.22 0.26 0 0 0</pose>
+          <geometry><box><size>0.45 0.28 0.22</size></box></geometry>
+          <material><ambient>0.1 0.35 0.75 1</ambient><diffuse>0.1 0.35 0.75 1</diffuse></material>
+        </visual>
+
+        <!-- Fût de solvant / flux de dégraissage PCB (Bleu chimique) -->
+        <visual name="chemical_drum_1">
+          <pose>0.42 0.2 0.54 0 0 0</pose>
+          <geometry><cylinder><radius>0.18</radius><length>0.8</length></cylinder></geometry>
+          <material><ambient>0.08 0.25 0.65 1</ambient><diffuse>0.08 0.25 0.65 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  POSTE DE CONTROLE QUALITE & BUREAU DE SUPERVISION FLASK      -->
+    <!--  Interface web Flask & suivi des détections (Chapitre 3)       -->
+    <!-- ============================================================== -->
+    <model name="supervision_desk_quality">
+      <static>true</static>
+      <pose>-4.2 -0.2 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <pose>0 0 0.65 0 0 0</pose>
+          <geometry><box><size>0.8 1.4 1.3</size></box></geometry>
+        </collision>
+
+        <!-- Plateau de table d'atelier -->
+        <visual name="table_top">
+          <pose>0 0 0.74 0 0 0</pose>
+          <geometry><box><size>0.75 1.35 0.04</size></box></geometry>
+          <material><ambient>0.85 0.86 0.88 1</ambient><diffuse>0.85 0.86 0.88 1</diffuse></material>
+        </visual>
+
+        <!-- Pieds métalliques tubulaires -->
+        <visual name="table_legs">
+          <pose>0 0 0.36 0 0 0</pose>
+          <geometry><box><size>0.65 1.25 0.72</size></box></geometry>
+          <material><ambient>0.25 0.25 0.28 1</ambient><diffuse>0.25 0.25 0.28 1</diffuse></material>
+        </visual>
+
+        <!-- Moniteur 1 : Dashboard Flask (supervision & traçabilité) -->
+        <visual name="monitor1_frame">
+          <pose>0.1 -0.28 1.05 0 0 0</pose>
+          <geometry><box><size>0.04 0.45 0.32</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="monitor1_screen">
+          <pose>0.12 -0.28 1.05 0 0 0</pose>
+          <geometry><box><size>0.01 0.42 0.29</size></box></geometry>
+          <material><ambient>0.1 0.45 0.65 1</ambient><diffuse>0.1 0.45 0.65 1</diffuse><emissive>0.05 0.2 0.3 1</emissive></material>
+        </visual>
+
+        <!-- Moniteur 2 : Flux vidéo direct YOLOv8 & statistiques -->
+        <visual name="monitor2_frame">
+          <pose>0.1 0.25 1.05 0 0 -0.2</pose>
+          <geometry><box><size>0.04 0.45 0.32</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="monitor2_screen">
+          <pose>0.12 0.25 1.05 0 0 -0.2</pose>
+          <geometry><box><size>0.01 0.42 0.29</size></box></geometry>
+          <material><ambient>0.15 0.65 0.3 1</ambient><diffuse>0.15 0.65 0.3 1</diffuse><emissive>0.08 0.3 0.15 1</emissive></material>
+        </visual>
+
+        <!-- Tour PC de supervision -->
+        <visual name="pc_tower">
+          <pose>-0.2 0.45 0.35 0 0 0</pose>
+          <geometry><box><size>0.4 0.18 0.38</size></box></geometry>
+          <material><ambient>0.15 0.15 0.18 1</ambient><diffuse>0.15 0.15 0.18 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  RAYONNAGE INDUSTRIEL DE STOCKAGE (WAREHOUSE RACK)            -->
+    <!--  Stockage des matières premières et lots de circuits PCB       -->
+    <!-- ============================================================== -->
+    <model name="industrial_storage_rack">
+      <static>true</static>
+      <pose>-4.3 2.5 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <pose>0 0 1.0 0 0 0</pose>
+          <geometry><box><size>0.7 2.2 2.0</size></box></geometry>
+        </collision>
+
+        <!-- Montants verticaux bleus -->
+        <visual name="uprights">
+          <pose>0 0 1.0 0 0 0</pose>
+          <geometry><box><size>0.65 2.15 2.0</size></box></geometry>
+          <material><ambient>0.12 0.3 0.65 1</ambient><diffuse>0.12 0.3 0.65 1</diffuse></material>
+        </visual>
+        <!-- Lisses horizontales de charge orange industriel -->
+        <visual name="shelf_beam_1">
+          <pose>0 0 0.5 0 0 0</pose>
+          <geometry><box><size>0.68 2.2 0.06</size></box></geometry>
+          <material><ambient>0.95 0.45 0.05 1</ambient><diffuse>0.95 0.45 0.05 1</diffuse></material>
+        </visual>
+        <visual name="shelf_beam_2">
+          <pose>0 0 1.1 0 0 0</pose>
+          <geometry><box><size>0.68 2.2 0.06</size></box></geometry>
+          <material><ambient>0.95 0.45 0.05 1</ambient><diffuse>0.95 0.45 0.05 1</diffuse></material>
+        </visual>
+        <visual name="shelf_beam_3">
+          <pose>0 0 1.7 0 0 0</pose>
+          <geometry><box><size>0.68 2.2 0.06</size></box></geometry>
+          <material><ambient>0.95 0.45 0.05 1</ambient><diffuse>0.95 0.45 0.05 1</diffuse></material>
+        </visual>
+
+        <!-- Boîtes de composants stockées sur les étagères -->
+        <visual name="stored_box_1">
+          <pose>0 -0.5 0.75 0 0 0</pose>
+          <geometry><box><size>0.5 0.4 0.4</size></box></geometry>
+          <material><ambient>0.7 0.55 0.35 1</ambient><diffuse>0.7 0.55 0.35 1</diffuse></material>
+        </visual>
+        <visual name="stored_box_2">
+          <pose>0 0.4 0.75 0 0 0</pose>
+          <geometry><box><size>0.5 0.5 0.4</size></box></geometry>
+          <material><ambient>0.15 0.4 0.6 1</ambient><diffuse>0.15 0.4 0.6 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  CONVOYEUR INDUSTRIEL DE TRANSFERT PCB A ROULEAUX             -->
+    <!--  Convoyeur évoqué aux pages 24-25 du rapport RAIA              -->
+    <!-- ============================================================== -->
+    <model name="conveyor_roller_table">
+      <static>true</static>
+      <pose>4.3 0 0 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="collision">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><box><size>0.75 2.6 0.9</size></box></geometry>
+        </collision>
+
+        <!-- Profilés latéraux en aluminium -->
+        <visual name="side_rails">
+          <pose>0 0 0.82 0 0 0</pose>
+          <geometry><box><size>0.7 2.5 0.12</size></box></geometry>
+          <material><ambient>0.75 0.76 0.78 1</ambient><diffuse>0.75 0.76 0.78 1</diffuse></material>
+        </visual>
+        <!-- Rouleaux métalliques galvanisés -->
+        <visual name="rollers_surface">
+          <pose>0 0 0.86 0 0 0</pose>
+          <geometry><box><size>0.58 2.45 0.04</size></box></geometry>
+          <material><ambient>0.82 0.83 0.85 1</ambient><diffuse>0.82 0.83 0.85 1</diffuse></material>
+        </visual>
+        <!-- Pieds réglables et longerons -->
+        <visual name="conveyor_legs">
+          <pose>0 0 0.38 0 0 0</pose>
+          <geometry><box><size>0.6 2.3 0.76</size></box></geometry>
+          <material><ambient>0.25 0.25 0.28 1</ambient><diffuse>0.25 0.25 0.28 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  BARRIERES DE PROTECTION INDUSTRIELLE (SECURITE ATELIER)      -->
+    <!-- ============================================================== -->
+    <model name="safety_barrier_east">
+      <static>true</static>
+      <pose>3.5 -0.8 0 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="collision">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><box><size>0.1 1.6 0.9</size></box></geometry>
+        </collision>
+        <!-- Garde-corps jaune sécurité -->
+        <visual name="rail_top">
+          <pose>0 0 0.85 0 0 0</pose>
+          <geometry><box><size>0.06 1.6 0.06</size></box></geometry>
+          <material><ambient>0.95 0.8 0.0 1</ambient><diffuse>0.95 0.8 0.0 1</diffuse></material>
+        </visual>
+        <visual name="rail_mid">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><box><size>0.06 1.6 0.06</size></box></geometry>
+          <material><ambient>0.95 0.8 0.0 1</ambient><diffuse>0.95 0.8 0.0 1</diffuse></material>
+        </visual>
+        <visual name="posts">
+          <pose>0 0 0.45 0 0 0</pose>
+          <geometry><box><size>0.08 1.55 0.9</size></box></geometry>
+          <material><ambient>0.95 0.8 0.0 1</ambient><diffuse>0.95 0.8 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  TRACÉ DE NAVIGATION & MARQUAGE AU SOL INDUSTRIEL             -->
+    <!--  Matérialise la ligne noire de la Fig. 20 (page 43 du rapport) -->
+    <!--  Non-collisionnel (épaisseur 0.001m pour ne pas gêner le LiDAR)-->
+    <!-- ============================================================== -->
+    <model name="floor_guidance_tracks">
+      <static>true</static>
+      <pose>0 0 0.001 0 0 0</pose>
+      <link name="link">
+        <!-- Station de départ / Base Dock : Emplacement au sol (jaune sécurité) -->
+        <visual name="dock_marking">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry><box><size>0.9 0.9 0.001</size></box></geometry>
+          <material><ambient>0.92 0.8 0.1 1</ambient><diffuse>0.92 0.8 0.1 1</diffuse></material>
+        </visual>
+        <visual name="dock_interior">
+          <pose>0 0 0.0001 0 0 0</pose>
+          <geometry><box><size>0.78 0.78 0.001</size></box></geometry>
+          <material><ambient>0.82 0.84 0.86 1</ambient><diffuse>0.82 0.84 0.86 1</diffuse></material>
+        </visual>
+
+        <!-- Plots de contact de recharge électrique au sol (Cuivre 24V DC) -->
+        <visual name="dock_charge_contact_left">
+          <pose>0 0.05 0.0012 0 0 0</pose>
+          <geometry><box><size>0.35 0.04 0.001</size></box></geometry>
+          <material><ambient>0.85 0.55 0.20 1</ambient><diffuse>0.85 0.55 0.20 1</diffuse></material>
+        </visual>
+        <visual name="dock_charge_contact_right">
+          <pose>0 -0.05 0.0012 0 0 0</pose>
+          <geometry><box><size>0.35 0.04 0.001</size></box></geometry>
+          <material><ambient>0.85 0.55 0.20 1</ambient><diffuse>0.85 0.55 0.20 1</diffuse></material>
+        </visual>
+        <!-- Symbole de recharge rapide verte au centre de la baie de docking -->
+        <visual name="dock_charging_indicator_symbol">
+          <pose>0 0 0.0014 0 0 0</pose>
+          <geometry><box><size>0.14 0.04 0.001</size></box></geometry>
+          <material><ambient>0.1 0.88 0.3 1</ambient><diffuse>0.1 0.88 0.3 1</diffuse></material>
+        </visual>
+
+        <!-- Segment Ligne de départ vers Station 1 MPM (Nord-Est) -->
+        <visual name="line_dock_to_mpm_1">
+          <pose>0.8 0 0.0002 0 0 0</pose>
+          <geometry><box><size>1.6 0.06 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="line_dock_to_mpm_2">
+          <pose>1.6 0.6 0.0002 0 0 0</pose>
+          <geometry><box><size>0.06 1.2 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="line_dock_to_mpm_3">
+          <pose>2.1 1.2 0.0002 0 0 0</pose>
+          <geometry><box><size>1.0 0.06 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+
+        <!-- Segment boucle entre Station 1 (MPM) et Station 2 (SPEA) -->
+        <visual name="line_mpm_to_spea">
+          <pose>0 1.2 0.0002 0 0 0</pose>
+          <geometry><box><size>3.6 0.06 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+
+        <!-- Segment Station 2 (SPEA) vers Zone Logistique / Four -->
+        <visual name="line_spea_down_1">
+          <pose>-1.6 0.3 0.0002 0 0 0</pose>
+          <geometry><box><size>0.06 1.8 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="line_spea_down_2">
+          <pose>-1.6 -0.6 0.0002 0 0 0</pose>
+          <geometry><box><size>0.06 1.2 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="line_logistics_to_reflow">
+          <pose>0 -1.2 0.0002 0 0 0</pose>
+          <geometry><box><size>3.6 0.06 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="line_reflow_return">
+          <pose>1.6 -0.6 0.0002 0 0 0</pose>
+          <geometry><box><size>0.06 1.2 0.001</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+        </visual>
+
+        <!-- Zone de sécurité au sol devant Station 1 MPM (Jaune zébré) -->
+        <visual name="safety_zone_mpm">
+          <pose>2.8 1.1 0.0001 0 0 0</pose>
+          <geometry><box><size>1.6 0.6 0.001</size></box></geometry>
+          <material><ambient>0.95 0.8 0.1 0.5</ambient><diffuse>0.95 0.8 0.1 0.5</diffuse></material>
+        </visual>
+
+        <!-- Zone de sécurité au sol devant Station 2 SPEA -->
+        <visual name="safety_zone_spea">
+          <pose>-2.8 1.1 0.0001 0 0 0</pose>
+          <geometry><box><size>1.6 0.6 0.001</size></box></geometry>
+          <material><ambient>0.95 0.8 0.1 0.5</ambient><diffuse>0.95 0.8 0.1 0.5</diffuse></material>
+        </visual>
+
+        <!-- Zone de sécurité au sol devant Four I.C.T -->
+        <visual name="safety_zone_ict">
+          <pose>2.8 -1.1 0.0001 0 0 0</pose>
+          <geometry><box><size>2.6 0.6 0.001</size></box></geometry>
+          <material><ambient>0.95 0.8 0.1 0.5</ambient><diffuse>0.95 0.8 0.1 0.5</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  BORNE DE RECHARGE INDUSTRIELLE AMR — MODÈLE MiR CHARGE          -->
+    <!--  Station murale industrielle selon standard MiR Charge (Photo)    -->
+    <!--  Implantation : Paroi Sud dégagée (x=0, y=-4.68), face à l'allée  -->
+    <!-- ============================================================== -->
+    <model name="mir_charge_station">
+      <static>true</static>
+      <pose>0 -4.68 0 0 0 0</pose>
+      <link name="link">
+        <!-- Collision physique de la borne murale -->
+        <collision name="mir_charge_collision">
+          <pose>0 0 0.22 0 0 0</pose>
+          <geometry><box><size>0.65 0.22 0.44</size></box></geometry>
+        </collision>
+
+        <!-- Pied / Support gauche au sol (Noir mat) -->
+        <visual name="mir_foot_left">
+          <pose>0.20 0 0.04 0 0 0</pose>
+          <geometry><box><size>0.08 0.16 0.08</size></box></geometry>
+          <material>
+            <ambient>0.12 0.12 0.14 1</ambient>
+            <diffuse>0.15 0.15 0.18 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Pied / Support droit au sol (Noir mat) -->
+        <visual name="mir_foot_right">
+          <pose>-0.20 0 0.04 0 0 0</pose>
+          <geometry><box><size>0.08 0.16 0.08</size></box></geometry>
+          <material>
+            <ambient>0.12 0.12 0.14 1</ambient>
+            <diffuse>0.15 0.15 0.18 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Coffret principal blanc industriel (Châssis MiR) -->
+        <visual name="mir_main_cabinet">
+          <pose>0 0 0.255 0 0 0</pose>
+          <geometry><box><size>0.62 0.18 0.35</size></box></geometry>
+          <material>
+            <ambient>0.93 0.94 0.95 1</ambient>
+            <diffuse>0.96 0.97 0.98 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Façade avant blanche avec rebord biseauté -->
+        <visual name="mir_front_bezel">
+          <pose>0 0.092 0.255 0 0 0</pose>
+          <geometry><box><size>0.60 0.006 0.33</size></box></geometry>
+          <material>
+            <ambient>0.97 0.97 0.98 1</ambient>
+            <diffuse>0.99 0.99 1.0 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Cavité / Poignée centrale encastrée (Gris clair) -->
+        <visual name="mir_center_pocket">
+          <pose>0.05 0.094 0.25 0 0 0</pose>
+          <geometry><box><size>0.22 0.005 0.09</size></box></geometry>
+          <material>
+            <ambient>0.82 0.83 0.85 1</ambient>
+            <diffuse>0.85 0.86 0.88 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Logo MiR — Lettre M -->
+        <visual name="mir_logo_m">
+          <pose>-0.12 0.096 0.31 0 0 0</pose>
+          <geometry><box><size>0.065 0.003 0.07</size></box></geometry>
+          <material>
+            <ambient>0.45 0.47 0.50 1</ambient>
+            <diffuse>0.50 0.52 0.55 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Logo MiR — Lettre i -->
+        <visual name="mir_logo_i">
+          <pose>-0.17 0.096 0.30 0 0 0</pose>
+          <geometry><box><size>0.012 0.003 0.05</size></box></geometry>
+          <material>
+            <ambient>0.45 0.47 0.50 1</ambient>
+            <diffuse>0.50 0.52 0.55 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Logo MiR — Triangle / Point cyan caractéristique sur le i -->
+        <visual name="mir_logo_cyan_dot">
+          <pose>-0.17 0.096 0.335 0 0 0</pose>
+          <geometry><box><size>0.014 0.004 0.014</size></box></geometry>
+          <material>
+            <ambient>0.0 0.65 0.85 1</ambient>
+            <diffuse>0.0 0.75 0.95 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Logo MiR — Lettre R -->
+        <visual name="mir_logo_r">
+          <pose>-0.21 0.096 0.31 0 0 0</pose>
+          <geometry><box><size>0.045 0.003 0.07</size></box></geometry>
+          <material>
+            <ambient>0.45 0.47 0.50 1</ambient>
+            <diffuse>0.50 0.52 0.55 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Boîtier saillant des plots de charge (Sous le logo MiR) -->
+        <visual name="mir_socket_housing">
+          <pose>-0.18 0.115 0.17 0 0 0</pose>
+          <geometry><box><size>0.075 0.04 0.11</size></box></geometry>
+          <material>
+            <ambient>0.92 0.93 0.94 1</ambient>
+            <diffuse>0.95 0.96 0.97 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Plot supérieur de charge 24V DC + (Broche cuivre / laiton) -->
+        <visual name="mir_charge_pin_upper">
+          <pose>-0.18 0.155 0.195 1.5708 0 0</pose>
+          <geometry><cylinder><radius>0.009</radius><length>0.045</length></cylinder></geometry>
+          <material>
+            <ambient>0.85 0.55 0.15 1</ambient>
+            <diffuse>0.95 0.65 0.20 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Plot inférieur de charge Masse GND - (Broche cuivre / laiton) -->
+        <visual name="mir_charge_pin_lower">
+          <pose>-0.18 0.155 0.145 1.5708 0 0</pose>
+          <geometry><cylinder><radius>0.009</radius><length>0.045</length></cylinder></geometry>
+          <material>
+            <ambient>0.85 0.55 0.15 1</ambient>
+            <diffuse>0.95 0.65 0.20 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Grille de ventilation latérale (Flanc gauche) -->
+        <visual name="mir_cooling_louvers">
+          <pose>0.311 0 0.26 0 0 0</pose>
+          <geometry><box><size>0.003 0.10 0.20</size></box></geometry>
+          <material>
+            <ambient>0.2 0.2 0.22 1</ambient>
+            <diffuse>0.25 0.25 0.28 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- Zone de marquage de sécurité au sol (Zone jaune/noir AMR Docking Bay) -->
+        <visual name="mir_docking_bay_marking">
+          <pose>0 0.60 0.0004 0 0 0</pose>
+          <geometry><box><size>0.85 1.0 0.001</size></box></geometry>
+          <material>
+            <ambient>0.95 0.75 0.05 0.6</ambient>
+            <diffuse>0.95 0.75 0.05 0.6</diffuse>
+          </material>
+        </visual>
+        <visual name="mir_docking_bay_inner">
+          <pose>0 0.60 0.0006 0 0 0</pose>
+          <geometry><box><size>0.75 0.90 0.001</size></box></geometry>
+          <material>
+            <ambient>0.12 0.12 0.15 0.8</ambient>
+            <diffuse>0.12 0.12 0.15 0.8</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

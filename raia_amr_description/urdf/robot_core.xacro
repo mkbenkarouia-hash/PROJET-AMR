@@ -1,0 +1,370 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="inertial_macros.xacro"/>
+
+    <!-- ==================== BASE FOOTPRINT ==================== -->
+    <link name="base_footprint"/>
+
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    </joint>
+
+    <!-- ==================== CHASSIS PRINCIPAL (BASE LINK) ==================== -->
+    <link name="base_link">
+        <!-- Corps rectangulaire principal -->
+        <visual>
+            <origin xyz="0 0 0.055" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.56 0.32 0.11"/>
+            </geometry>
+            <material name="chassis_grey"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.055" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.56 0.32 0.11"/>
+            </geometry>
+        </collision>
+
+        <!-- Rebord / Pare-chocs avant arrondi (comme sur la Fig. 26) -->
+        <visual>
+            <origin xyz="0.28 0 0.03" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.16" length="0.025"/>
+            </geometry>
+            <material name="chassis_grey"/>
+        </visual>
+        <collision>
+            <origin xyz="0.28 0 0.03" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.16" length="0.025"/>
+            </geometry>
+        </collision>
+
+        <!-- Rebord / Pare-chocs arrière arrondi (comme sur la Fig. 26) -->
+        <visual>
+            <origin xyz="-0.28 0 0.03" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.16" length="0.025"/>
+            </geometry>
+            <material name="chassis_grey"/>
+        </visual>
+        <collision>
+            <origin xyz="-0.28 0 0.03" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.16" length="0.025"/>
+            </geometry>
+        </collision>
+
+        <!-- ==================== ZONE DE RECHARGE EMBARQUÉE (INTERFACE COMPATIBLE MiR CHARGE) ==================== -->
+        <!-- Boîtier récepteur de recharge automatique arrière (Centré sur les broches du MiR Charge) -->
+        <visual name="charging_interface_housing">
+            <origin xyz="-0.285 0.08 0.04" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.018 0.12 0.075"/>
+            </geometry>
+            <material name="charging_pad_black"/>
+        </visual>
+
+        <!-- Rainure de guidage en V / Chanfrein de centrage mécanique -->
+        <visual name="charging_guide_funnel">
+            <origin xyz="-0.292 0.08 0.04" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.006 0.10 0.065"/>
+            </geometry>
+            <material name="accent_blue"/>
+        </visual>
+
+        <!-- Plot récepteur femelle Supérieur (Liaison broche 24V DC + du MiR Charge) -->
+        <visual name="charging_contact_upper">
+            <origin xyz="-0.293 0.08 0.055" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder radius="0.012" length="0.008"/>
+            </geometry>
+            <material name="charging_copper"/>
+        </visual>
+
+        <!-- Plot récepteur femelle Inférieur (Liaison broche Masse GND - du MiR Charge) -->
+        <visual name="charging_contact_lower">
+            <origin xyz="-0.293 0.08 0.025" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder radius="0.012" length="0.008"/>
+            </geometry>
+            <material name="charging_copper"/>
+        </visual>
+
+        <!-- Voyant LED d'état de charge de la batterie (Vert fixe = 100% / Prêt) -->
+        <visual name="charging_status_led">
+            <origin xyz="-0.285 0.08 0.085" rpy="0 0 0"/>
+            <geometry>
+                <sphere radius="0.008"/>
+            </geometry>
+            <material name="charging_green"/>
+        </visual>
+
+        <!-- Jauge visuelle de batterie embarquée (Afficheur LED 5 barres sur capot supérieur) -->
+        <visual name="battery_gauge_display">
+            <origin xyz="-0.15 0 0.112" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.08 0.035 0.004"/>
+            </geometry>
+            <material name="charging_pad_black"/>
+        </visual>
+        <visual name="battery_gauge_leds">
+            <origin xyz="-0.15 0 0.115" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.06 0.02 0.002"/>
+            </geometry>
+            <material name="charging_green"/>
+        </visual>
+
+        <!-- Plaque de contact de charge inférieure (Option recharge par le sol) -->
+        <visual name="charging_ground_contact_pad">
+            <origin xyz="0 0 0.005" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.14 0.18 0.003"/>
+            </geometry>
+            <material name="charging_copper"/>
+        </visual>
+
+        <!-- Pilier vertical Avant -->
+        <visual>
+            <origin xyz="0.13 0 0.18" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.035 0.14"/>
+            </geometry>
+            <material name="accent_blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.13 0 0.18" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.035 0.14"/>
+            </geometry>
+        </collision>
+
+        <!-- Pilier vertical Arrière -->
+        <visual>
+            <origin xyz="-0.13 0 0.18" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.035 0.14"/>
+            </geometry>
+            <material name="accent_blue"/>
+        </visual>
+        <collision>
+            <origin xyz="-0.13 0 0.18" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.035 0.14"/>
+            </geometry>
+        </collision>
+
+        <!-- Plateau Inférieur Support PCB (Shelf 1) -->
+        <visual>
+            <origin xyz="0 0 0.25" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.46 0.12 0.012"/>
+            </geometry>
+            <material name="rack_metal"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.25" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.46 0.12 0.012"/>
+            </geometry>
+        </collision>
+
+        <!-- Extrémités arrondies Plateau 1 -->
+        <visual>
+            <origin xyz="0.23 0 0.25" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.06" length="0.012"/>
+            </geometry>
+            <material name="rack_metal"/>
+        </visual>
+        <visual>
+            <origin xyz="-0.23 0 0.25" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.06" length="0.012"/>
+            </geometry>
+            <material name="rack_metal"/>
+        </visual>
+
+        <!-- Plateau Supérieur Support PCB (Shelf 2) -->
+        <visual>
+            <origin xyz="0 0 0.32" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.46 0.12 0.012"/>
+            </geometry>
+            <material name="rack_metal"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.32" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.46 0.12 0.012"/>
+            </geometry>
+        </collision>
+
+        <!-- Extrémités arrondies Plateau 2 -->
+        <visual>
+            <origin xyz="0.23 0 0.32" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.06" length="0.012"/>
+            </geometry>
+            <material name="rack_metal"/>
+        </visual>
+        <visual>
+            <origin xyz="-0.23 0 0.32" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.06" length="0.012"/>
+            </geometry>
+            <material name="rack_metal"/>
+        </visual>
+
+        <xacro:inertial_box mass="8.5" x="0.56" y="0.32" z="0.33">
+            <origin xyz="0 0 0.10" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    <gazebo reference="base_link">
+        <material>Gazebo/DarkGrey</material>
+    </gazebo>
+
+    <!-- ==================== ROUE MOTRICE GAUCHE ==================== -->
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="left_wheel_link"/>
+        <origin xyz="0 0.175 0" rpy="-${pi/2} 0 0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <link name="left_wheel_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+            <material name="wheel_black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="0.45" length="0.03" radius="0.05">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <gazebo reference="left_wheel_link">
+        <material>Gazebo/FlatBlack</material>
+        <mu1>1.2</mu1>
+        <mu2>1.2</mu2>
+        <fdir1>1 0 0</fdir1>
+        <kp>1000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+    </gazebo>
+
+    <!-- ==================== ROUE MOTRICE DROITE ==================== -->
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="right_wheel_link"/>
+        <origin xyz="0 -0.175 0" rpy="${pi/2} 0 0"/>
+        <axis xyz="0 0 -1"/>
+    </joint>
+
+    <link name="right_wheel_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+            <material name="wheel_black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="0.45" length="0.03" radius="0.05">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <gazebo reference="right_wheel_link">
+        <material>Gazebo/FlatBlack</material>
+        <mu1>1.2</mu1>
+        <mu2>1.2</mu2>
+        <fdir1>1 0 0</fdir1>
+        <kp>1000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+    </gazebo>
+
+    <!-- ==================== ROUE LIBRE AVANT (CASTER) ==================== -->
+    <joint name="front_caster_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="front_caster_link"/>
+        <origin xyz="0.22 0 -0.025"/>
+    </joint>
+
+    <link name="front_caster_link">
+        <visual>
+            <geometry>
+                <sphere radius="0.0245"/>
+            </geometry>
+            <material name="wheel_black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="0.0245"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_sphere mass="0.20" radius="0.0245">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <gazebo reference="front_caster_link">
+        <material>Gazebo/FlatBlack</material>
+        <mu1>0.0001</mu1>
+        <mu2>0.0001</mu2>
+        <kp>100000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+    </gazebo>
+
+    <!-- ==================== ROUE LIBRE ARRIÈRE (CASTER) ==================== -->
+    <joint name="rear_caster_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="rear_caster_link"/>
+        <origin xyz="-0.22 0 -0.025"/>
+    </joint>
+
+    <link name="rear_caster_link">
+        <visual>
+            <geometry>
+                <sphere radius="0.0245"/>
+            </geometry>
+            <material name="wheel_black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="0.0245"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_sphere mass="0.20" radius="0.0245">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <gazebo reference="rear_caster_link">
+        <material>Gazebo/FlatBlack</material>
+        <mu1>0.0001</mu1>
+        <mu2>0.0001</mu2>
+        <kp>100000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+    </gazebo>
+
+</robot>
