@@ -6,7 +6,7 @@ Ce dossier regroupe les enregistrements vidéo de simulation de l'AMR RAIA 4.0 d
 
 ## 📹 Contenu de la Démonstration Vidéo (`raia_amr_simulation.mp4`)
 
-La vidéo capture l'écran unifié sous **WSLg** (Gazebo 11 ODE + RViz2 Nav2) et valide l'intégralité du cahier des charges :
+La vidéo est enregistrée en **vue de dessus globale (overhead / bird's-eye view à $z = 16.5\text{ m}$)** avec un cadrage complet de l'atelier $10\text{m} \times 10\text{m}$ sous Gazebo 11 ODE via un framebuffer virtuel Xvfb dédié (1366x768 24-bit, 0 écran noir). Elle permet de visualiser l'ensemble des 3 stations, les allées de guidage, le balayage laser LiDAR en éventail bleu, et valide l'intégralité du cahier des charges :
 
 1. **État Initial à la Borne MiR Charge (Quai Sud : $x=0.0, y=-3.80$)** :
    - Robot amarré aux plots 24V DC, en veille, batterie à 100%.
