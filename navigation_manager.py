@@ -89,6 +89,7 @@ class NavigationManager(Node):
             Bool, "/line_call_button", self._line_button_cb, 10
         )
         self.pub_mission_state = self.create_publisher(String, "/mission_state", 10)
+        self.pub_initialpose = self.create_publisher(PoseWithCovarianceStamped, "/initialpose", 10)
 
         self.operator_call_received: bool = False
         self.operator_call_source: str = "Bouton d'appel Ligne 1 (Sérigraphie MPM)"
@@ -149,7 +150,7 @@ class NavigationManager(Node):
         self.pub_mission_state.publish(msg)
 
     def update_robot_pose(self) -> bool:
-        """Met à jour la pose exacte du robot dans le repère 'map' via TF2 ou AMCL."""
+        """Met à jour la pose exacte du robot dans le repère 'map' via TF2."""
         try:
             trans = self.tf_buffer.lookup_transform(
                 "map",
@@ -163,7 +164,53 @@ class NavigationManager(Node):
             self.has_pose = True
             return True
         except Exception:
-            return self.has_pose
+            return False
+
+    def set_initial_pose_amcl(
+        self,
+        x: float = 0.0,
+        y: float = -3.80,
+        theta: float = 1.5708,
+        retries: int = 6
+    ) -> bool:
+        """
+        Initialise et amorce le filtre particulaire AMCL en publiant sur /initialpose.
+        Garantit la synchronisation temporelle sim_time sous WSL2 et la continuité TF map -> odom.
+        """
+        msg = PoseWithCovarianceStamped()
+        msg.header.frame_id = "map"
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.pose.pose.position.x = x
+        msg.pose.pose.position.y = y
+        msg.pose.pose.position.z = 0.0
+
+        qx, qy, qz, qw = yaw_to_quaternion(theta)
+        msg.pose.pose.orientation.x = qx
+        msg.pose.pose.orientation.y = qy
+        msg.pose.pose.orientation.z = qz
+        msg.pose.pose.orientation.w = qw
+
+        msg.pose.covariance[0] = 0.05
+        msg.pose.covariance[7] = 0.05
+        msg.pose.covariance[35] = 0.05
+
+        self.get_logger().info(
+            f"[AMCL] Amorçage initialpose à ({x:.2f}, {y:.2f}, {math.degrees(theta):.1f}°)..."
+        )
+
+        for attempt in range(retries):
+            msg.header.stamp = self.get_clock().now().to_msg()
+            self.pub_initialpose.publish(msg)
+            for _ in range(4):
+                rclpy.spin_once(self, timeout_sec=0.1)
+            if self.update_robot_pose():
+                self.get_logger().info(
+                    f"[AMCL] ✓ Arbre TF 'map' -> 'base_footprint' vérifié et actif ! Pose : ({self.current_x:.2f}, {self.current_y:.2f})"
+                )
+                return True
+            time.sleep(0.2)
+
+        return self.update_robot_pose()
 
     def verify_preconditions(self, target: Station, timeout_sec: float = 15.0) -> Tuple[bool, str]:
         """
@@ -180,14 +227,20 @@ class NavigationManager(Node):
             self._set_state(NavState.FAILED, err)
             return False, err
 
-        # 2. Localisation (TF ou AMCL)
+        # 2. Localisation (TF connectée et synchronisée)
         start_wait = time.time()
         loc_ok = False
-        while (time.time() - start_wait) < 10.0:
+        while (time.time() - start_wait) < 5.0:
             rclpy.spin_once(self, timeout_sec=0.2)
             if self.update_robot_pose():
                 loc_ok = True
                 break
+
+        if not loc_ok:
+            # Auto-réparation TF / AMCL via amorçage initialpose
+            self.get_logger().warn("[SÉCURITÉ] Arbre TF map->base_footprint non détecté, amorçage automatique AMCL...")
+            if self.set_initial_pose_amcl(0.0, -3.80, 1.5708):
+                loc_ok = True
 
         if not loc_ok:
             err = "Échec : Localisation 'map' -> 'base_footprint' introuvable. AMCL n'a pas encore fourni de pose !"

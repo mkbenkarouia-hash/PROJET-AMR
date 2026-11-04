@@ -83,7 +83,7 @@ sleep 6
 
 # 5. Déclenchement automatique de la mission
 echo -e "\n${YELLOW}[4/4] Lancement automatique de la mission inter-lignes...${NC}"
-python3 ~/ros2_ws/src/raia_amr_description/run_mission.py
+python3 -u ~/ros2_ws/src/raia_amr_description/run_mission.py
 
 echo -e "\n${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN} [SUCCÈS] Mission inter-lignes terminée avec succès !${NC}"

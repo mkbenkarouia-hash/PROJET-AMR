@@ -45,12 +45,21 @@ def main():
     station_mgr = StationManager()
     nav_mgr = NavigationManager("mission_runner")
 
-    # 1. Synchronisation de la pose TF initiale
+    # 1. Amorçage et synchronisation de la pose TF initiale à la station de recharge ST0
     print("\n[MISSION] Synchronisation de la localisation robot et de l'arbre TF...")
     nav_mgr.publish_mission_state("INITIALIZING_TF")
+
+    st0 = station_mgr.get_station("ST0")
+    st0_x = st0.x if st0 else 0.0
+    st0_y = st0.y if st0 else -3.80
+    st0_th = st0.theta if st0 else 1.5708
+
+    # Amorçage initial AMCL avec horloge de simulation synchronisée
+    nav_mgr.set_initial_pose_amcl(st0_x, st0_y, st0_th)
+
     start_sync = time.time()
     tf_ready = False
-    while (time.time() - start_sync) < 30.0:
+    while (time.time() - start_sync) < 25.0:
         rclpy.spin_once(nav_mgr, timeout_sec=0.2)
         if nav_mgr.update_robot_pose():
             tf_ready = True
