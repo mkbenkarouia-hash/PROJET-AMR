@@ -130,6 +130,32 @@
             <material name="charging_copper"/>
         </visual>
 
+        <!-- ==================== MODULE D'AVERTISSEUR SONORE & ALARME (SOUND ALERT SENSOR/ACTUATOR) ==================== -->
+        <!-- Boîtier de l'avertisseur sonore industriel (Monté sur le plateau avant) -->
+        <visual name="sound_alert_module_base">
+            <origin xyz="0.22 0.09 0.125" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.045 0.05 0.03"/>
+            </geometry>
+            <material name="accent_blue"/>
+        </visual>
+        <!-- Grille du haut-parleur / Transducteur piézoélectrique d'alerte -->
+        <visual name="sound_alert_speaker_grill">
+            <origin xyz="0.243 0.09 0.125" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder radius="0.016" length="0.005"/>
+            </geometry>
+            <material name="chassis_grey"/>
+        </visual>
+        <!-- Balise lumineuse / Flash LED d'avertisseur sonore (Orange ambre) -->
+        <visual name="sound_alert_warning_beacon">
+            <origin xyz="0.22 0.09 0.145" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.014" length="0.015"/>
+            </geometry>
+            <material name="safety_orange"/>
+        </visual>
+
         <!-- Pilier vertical Avant -->
         <visual>
             <origin xyz="0.13 0 0.18" rpy="0 0 0"/>

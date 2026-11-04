@@ -48,11 +48,14 @@ Le système repose sur une architecture modulaire conforme aux standards industr
 | :--- | :--- | :--- |
 | **Middleware** | **ROS 2 Humble / Jazzy** | Communication inter-nœuds, actions asynchrones, TF2 |
 | **Simulateur Physique** | **Gazebo 11 (ODE)** | Simulation dynamique, contacts sol-roues, inerties, capteurs |
-| **Modélisation Robot** | **URDF / Xacro** | Cinématique différentielle, plateaux support PCB, récepteur de charge |
+| **Modélisation Robot** | **URDF / Xacro** | Cinématique différentielle, plateaux support PCB, récepteur de charge, avertisseur sonore |
 | **Navigation Autonome** | **Nav2 Navigation Stack** | Planification globale (`Navfn`), contrôle local (`RPPC`), Behavior Tree |
+| **Sécurité Piétons & Son** | **LiDAR + PulseAudio (`paplay`)** | Gabarit de sécurité ISO 3691-4, arrêt d'urgence, alerte sonore (`amr_safety_melody.wav`) |
+| **Évitement d'Obstacles** | **Local & Global Costmaps** | Déviation autonome autour d'obstacles fixes et mobiles |
 | **Localisation** | **AMCL & Odométrie** | Filtre particulaire probabiliste recalé par scan LiDAR 2D |
 | **Cartographie** | **SLAM Toolbox** | Occupancy Grid Map (OGM) 2D à résolution 0.05 m/pixel |
 | **Supervision Mission** | **Python 3 (`rclpy`)** | Orchestration multi-stations, écoute du bouton d'appel opérateur |
+| **Enregistrement Vidéo** | **FFmpeg (`x11grab`)** | Capture HD intégrale de la simulation dans le dossier `simulations/` |
 
 ---
 
@@ -186,6 +189,16 @@ source ~/ros2_ws/install/setup.bash
 bash start_all_and_navigate.sh
 ```
 
+### Enregistrement vidéo HD dans le dossier 'simulations/'
+Pour exécuter la démonstration tout en filmant automatiquement la simulation complète (évitement d'obstacle fixe, arrêt piéton avec avertisseur sonore, prise et dépose PCB, amarrage MiR Charge) :
+```bash
+cd ~/ros2_ws/src/raia_amr_description
+source /opt/ros/humble/setup.bash
+source ~/ros2_ws/install/setup.bash
+bash record_and_run_simulation.sh
+```
+La vidéo finale est instantanément disponible dans le dossier `simulations/raia_amr_simulation.mp4`.
+
 ### Déclenchement manuel par l'opérateur (optionnel)
 Pour déclencher manuellement le départ de l'AMR depuis un autre terminal pendant qu'il est en veille à la borne :
 ```bash
@@ -248,19 +261,24 @@ Les tests de validation en boucle fermée confirment la fiabilité totale du sys
 │   └── online_async_launch.py    # Lancement SLAM Toolbox pour cartographie
 ├── urdf/
 │   ├── robot.urdf.xacro          # Fichier maître URDF de l'AMR
-│   ├── robot_core.xacro          # Châssis, roues motrices, casters, récepteur MiR Charge
+│   ├── robot_core.xacro          # Châssis, roues motrices, récepteur MiR Charge & avertisseur sonore
 │   ├── gazebo_control.xacro      # Plugin différentiel Gazebo ODE & odométrie
 │   ├── lidar.xacro               # Capteur LiDAR 2D 360°
 │   ├── camera.xacro              # Caméra de profondeur RGB-D
-│   ├── materials.xacro           # Matériaux et teintes industrielles (cuivre, bleu, blanc MiR)
+│   ├── materials.xacro           # Matériaux industriels (cuivre, bleu, blanc MiR, orange sécurité)
 │   └── inertial_macros.xacro     # Calculs physiques des matrices d'inertie
 ├── worlds/
-│   └── factory_workshop.world    # Monde Gazebo complet : machines CMS, convoyeurs & borne MiR Charge
+│   └── factory_workshop.world    # Monde Gazebo : machines CMS, borne MiR Charge, chariot fixe & travailleur piéton
+├── sounds/
+│   └── amr_safety_melody.wav     # Mélodie harmonique d'alerte sonore industrielle (44.1 kHz 16-bit)
+├── simulations/                  # Dossier vidéo contenant les enregistrements MP4 de la simulation
 ├── DOCS/                         # Guides d'installation, rapports de validation & présentations
-├── navigation_manager.py         # Gestionnaire sécurisé des actions Nav2
+├── navigation_manager.py         # Gestionnaire sécurisé Nav2 + zone de sécurité LiDAR + alerte sonore
 ├── station_manager.py            # API d'accès aux stations industrielles
+├── worker_patrol.py              # Contrôleur cinématique de la traversée piéton (obstacle mobile)
 ├── run_mission.py                # Script exécutif du cycle de production complet
-├── start_all_and_navigate.sh     # Script bash de démarrage automatisé
+├── start_all_and_navigate.sh     # Script bash de démarrage automatisé (Gazebo + RViz + Nav2 + Mission)
+├── record_and_run_simulation.sh  # Script d'exécution et d'enregistrement vidéo HD dans simulations/
 ├── CMakeLists.txt                # Configuration de build ament_cmake
 ├── package.xml                   # Métadonnées du package ROS 2
 ├── .gitignore                    # Filtres d'exclusion Git

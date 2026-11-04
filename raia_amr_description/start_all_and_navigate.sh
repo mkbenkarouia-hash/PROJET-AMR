@@ -44,7 +44,7 @@ LAUNCH_PID=$!
 
 cleanup() {
     echo -e "\n${YELLOW}Fermeture de la simulation et arrêt des nœuds...${NC}"
-    kill -9 $LAUNCH_PID 2>/dev/null || true
+    kill -9 $LAUNCH_PID $WORKER_PID 2>/dev/null || true
     killall -9 gzserver gzclient robot_state_publisher component_container_isolated component_container rviz2 python3 2>/dev/null || true
     exit 0
 }
@@ -81,7 +81,12 @@ fi
 # Pause de stabilisation de la physique Gazebo et amorçage du filtre AMCL
 sleep 6
 
-# 5. Déclenchement automatique de la mission
+# 5. Démarrage de l'animateur piéton d'atelier (Obstacle mobile)
+python3 ~/ros2_ws/src/raia_amr_description/worker_patrol.py > /dev/null 2>&1 &
+WORKER_PID=$!
+sleep 1
+
+# 6. Déclenchement automatique de la mission
 echo -e "\n${YELLOW}[4/4] Lancement automatique de la mission inter-lignes...${NC}"
 python3 -u ~/ros2_ws/src/raia_amr_description/run_mission.py
 

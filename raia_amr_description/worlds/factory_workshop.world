@@ -14,6 +14,14 @@
       <grid>true</grid>
     </scene>
 
+    <!-- Plugin ROS2 Gazebo State pour contrôle d'entités dynamiques (/set_entity_state) -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+      <update_rate>50.0</update_rate>
+    </plugin>
+
     <!-- Éclairage solaire autonome (sans ombres pour gain FPS) -->
     <light type="directional" name="sun">
       <cast_shadows>false</cast_shadows>
@@ -1075,6 +1083,195 @@
             <ambient>0.12 0.12 0.15 0.8</ambient>
             <diffuse>0.12 0.12 0.15 0.8</diffuse>
           </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  OBSTACLE FIXE : CHARIOT INDUSTRIEL DE MAINTENANCE TECHNIQUE   -->
+    <!--  Implanté au carrefour central (x=0.0, y=0.65) entre ST1 et ST2 -->
+    <!--  Valide la déviation autonome dynamique (contournement Nav2)     -->
+    <!-- ============================================================== -->
+    <model name="chariot_maintenance_fixe">
+      <static>true</static>
+      <pose>0.0 0.65 0 0 0 0</pose>
+      <link name="link">
+        <!-- Collision englobante solide détectée par le LiDAR 2D -->
+        <collision name="cart_collision">
+          <pose>0 0 0.42 0 0 0</pose>
+          <geometry><box><size>0.54 0.54 0.84</size></box></geometry>
+        </collision>
+
+        <!-- 4 Roues industrielles pivotantes au sol -->
+        <visual name="cart_wheel_fl">
+          <pose>0.22 0.22 0.04 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="cart_wheel_fr">
+          <pose>0.22 -0.22 0.04 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="cart_wheel_rl">
+          <pose>-0.22 0.22 0.04 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+        <visual name="cart_wheel_rr">
+          <pose>-0.22 -0.22 0.04 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+        </visual>
+
+        <!-- Plateau inférieur (Gris anthracite métallisé) -->
+        <visual name="cart_bottom_shelf">
+          <pose>0 0 0.10 0 0 0</pose>
+          <geometry><box><size>0.50 0.50 0.04</size></box></geometry>
+          <material><ambient>0.25 0.27 0.30 1</ambient><diffuse>0.30 0.32 0.35 1</diffuse></material>
+        </visual>
+
+        <!-- 4 Montants verticaux d'angle tubulaires (Chrome/Aluminium) -->
+        <visual name="cart_post_fl">
+          <pose>0.23 0.23 0.44 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.72</length></cylinder></geometry>
+          <material><ambient>0.75 0.77 0.80 1</ambient><diffuse>0.85 0.87 0.90 1</diffuse></material>
+        </visual>
+        <visual name="cart_post_fr">
+          <pose>0.23 -0.23 0.44 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.72</length></cylinder></geometry>
+          <material><ambient>0.75 0.77 0.80 1</ambient><diffuse>0.85 0.87 0.90 1</diffuse></material>
+        </visual>
+        <visual name="cart_post_rl">
+          <pose>-0.23 0.23 0.44 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.72</length></cylinder></geometry>
+          <material><ambient>0.75 0.77 0.80 1</ambient><diffuse>0.85 0.87 0.90 1</diffuse></material>
+        </visual>
+        <visual name="cart_post_rr">
+          <pose>-0.23 -0.23 0.44 0 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.72</length></cylinder></geometry>
+          <material><ambient>0.75 0.77 0.80 1</ambient><diffuse>0.85 0.87 0.90 1</diffuse></material>
+        </visual>
+
+        <!-- Étagère intermédiaire -->
+        <visual name="cart_mid_shelf">
+          <pose>0 0 0.44 0 0 0</pose>
+          <geometry><box><size>0.48 0.48 0.02</size></box></geometry>
+          <material><ambient>0.3 0.3 0.35 1</ambient><diffuse>0.35 0.35 0.40 1</diffuse></material>
+        </visual>
+
+        <!-- Caisse à outils rouge atelier sur étagère intermédiaire -->
+        <visual name="cart_toolbox">
+          <pose>0.05 0.05 0.51 0 0 0.2</pose>
+          <geometry><box><size>0.26 0.18 0.12</size></box></geometry>
+          <material><ambient>0.8 0.15 0.1 1</ambient><diffuse>0.9 0.2 0.15 1</diffuse></material>
+        </visual>
+
+        <!-- Plateau supérieur de travail (Bleu industriel avec rebord) -->
+        <visual name="cart_top_tray">
+          <pose>0 0 0.80 0 0 0</pose>
+          <geometry><box><size>0.52 0.52 0.04</size></box></geometry>
+          <material><ambient>0.10 0.35 0.65 1</ambient><diffuse>0.15 0.45 0.80 1</diffuse></material>
+        </visual>
+
+        <!-- Poignée ergonomique de poussée du chariot -->
+        <visual name="cart_handle">
+          <pose>-0.28 0 0.82 1.5708 0 0</pose>
+          <geometry><cylinder><radius>0.015</radius><length>0.45</length></cylinder></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+        </visual>
+
+        <!-- Signalisation rayures de danger jaune sur le flanc -->
+        <visual name="cart_hazard_strip">
+          <pose>0 0.262 0.79 0 0 0</pose>
+          <geometry><box><size>0.50 0.005 0.035</size></box></geometry>
+          <material><ambient>0.95 0.80 0.05 1</ambient><diffuse>0.98 0.85 0.10 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================== -->
+    <!--  OBSTACLE MOBILE : OPÉRATEUR D'ATELIER (EMPLOYEUR / PIÉTON)   -->
+    <!--  Positionné sur l'allée centrale de transit (y = -1.60)         -->
+    <!--  Traverse la trajectoire de l'AMR en cours de navigation ST0->ST1-->
+    <!-- ============================================================== -->
+    <model name="human_worker_pedestrian">
+      <static>false</static>
+      <pose>1.5 -1.6 0 0 0 3.14159</pose>
+      <link name="link">
+        <gravity>false</gravity>
+        <kinematic>true</kinematic>
+        <!-- Collision cylindrique complète pour réflexion LiDAR fiable -->
+        <collision name="worker_body_collision">
+          <pose>0 0 0.85 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.24</radius>
+              <length>1.70</length>
+            </cylinder>
+          </geometry>
+        </collision>
+
+        <!-- Chaussures de sécurité (Cuir noir coquées) -->
+        <visual name="worker_boot_left">
+          <pose>0.04 0.11 0.06 0 0 0</pose>
+          <geometry><box><size>0.22 0.11 0.12</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+        </visual>
+        <visual name="worker_boot_right">
+          <pose>0.04 -0.11 0.06 0 0 0</pose>
+          <geometry><box><size>0.22 0.11 0.12</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+        </visual>
+
+        <!-- Pantalon de travail d'atelier (Bleu de travail / Jean foncé) -->
+        <visual name="worker_leg_left">
+          <pose>0 0.11 0.48 0 0 0</pose>
+          <geometry><cylinder><radius>0.09</radius><length>0.72</length></cylinder></geometry>
+          <material><ambient>0.15 0.20 0.35 1</ambient><diffuse>0.18 0.25 0.45 1</diffuse></material>
+        </visual>
+        <visual name="worker_leg_right">
+          <pose>0 -0.11 0.48 0 0 0</pose>
+          <geometry><cylinder><radius>0.09</radius><length>0.72</length></cylinder></geometry>
+          <material><ambient>0.15 0.20 0.35 1</ambient><diffuse>0.18 0.25 0.45 1</diffuse></material>
+        </visual>
+
+        <!-- Torso / Gilet de sécurité haute visibilité (Jaune fluo EN ISO 20471) -->
+        <visual name="worker_torso_vest">
+          <pose>0 0 1.10 0 0 0</pose>
+          <geometry><box><size>0.26 0.44 0.54</size></box></geometry>
+          <material><ambient>0.85 0.95 0.05 1</ambient><diffuse>0.90 0.99 0.10 1</diffuse></material>
+        </visual>
+
+        <!-- Bandes rétroréfléchissantes horizontales sur gilet (Argenté) -->
+        <visual name="worker_reflective_stripe_1">
+          <pose>0 0 1.02 0 0 0</pose>
+          <geometry><box><size>0.268 0.448 0.05</size></box></geometry>
+          <material><ambient>0.92 0.94 0.96 1</ambient><diffuse>0.96 0.98 1.0 1</diffuse></material>
+        </visual>
+        <visual name="worker_reflective_stripe_2">
+          <pose>0 0 1.16 0 0 0</pose>
+          <geometry><box><size>0.268 0.448 0.05</size></box></geometry>
+          <material><ambient>0.92 0.94 0.96 1</ambient><diffuse>0.96 0.98 1.0 1</diffuse></material>
+        </visual>
+
+        <!-- Tête de l'opérateur (Teinte de peau naturelle) -->
+        <visual name="worker_head">
+          <pose>0 0 1.50 0 0 0</pose>
+          <geometry><sphere><radius>0.11</radius></sphere></geometry>
+          <material><ambient>0.85 0.65 0.50 1</ambient><diffuse>0.90 0.70 0.55 1</diffuse></material>
+        </visual>
+
+        <!-- Casque de chantier de sécurité blanc (Protection EPI) -->
+        <visual name="worker_hardhat_dome">
+          <pose>0 0 1.58 0 0 0</pose>
+          <geometry><sphere><radius>0.13</radius></sphere></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>1.0 1.0 1.0 1</diffuse></material>
+        </visual>
+        <visual name="worker_hardhat_brim">
+          <pose>0.03 0 1.54 0 0 0</pose>
+          <geometry><cylinder><radius>0.15</radius><length>0.02</length></cylinder></geometry>
+          <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>1.0 1.0 1.0 1</diffuse></material>
         </visual>
       </link>
     </model>

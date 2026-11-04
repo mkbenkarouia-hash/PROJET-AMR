@@ -42,4 +42,9 @@
         <color rgba="0.15 0.15 0.15 1.0"/>
     </material>
 
+    <!-- Matériau avertisseur sonore et sécurité -->
+    <material name="safety_orange">
+        <color rgba="1.0 0.55 0.05 1.0"/>
+    </material>
+
 </robot>
