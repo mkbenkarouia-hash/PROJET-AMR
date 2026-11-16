@@ -113,7 +113,7 @@ def main():
     nav_mgr.publish_mission_state("NAVIGATING_TO_ST1_SERIGRAPHIE")
     success1 = nav_mgr.navigate_to_station(
         "ST1",
-        timeout_sec=90.0,
+        timeout_sec=120.0,
         dwell_time_sec=3.5,
         dwell_action_desc="Chargement automatique de la carte PCB sérigraphiée sur le plateau AMR"
     )
@@ -132,7 +132,7 @@ def main():
     if success1:
         success2 = nav_mgr.navigate_to_station(
             "ST2",
-            timeout_sec=90.0,
+            timeout_sec=120.0,
             dwell_time_sec=3.5,
             dwell_action_desc="Transfert automatique de la carte PCB vers les rouleaux du convoyeur"
         )
@@ -148,7 +148,7 @@ def main():
     nav_mgr.publish_mission_state("RETURNING_TO_CHARGING_STATION")
     success3 = nav_mgr.navigate_to_station(
         "ST0",
-        timeout_sec=90.0,
+        timeout_sec=120.0,
         dwell_time_sec=3.0,
         dwell_action_desc="Connexion automatique aux plots de recharge 24V DC du dock central"
     )

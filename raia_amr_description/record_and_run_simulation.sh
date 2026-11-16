@@ -71,7 +71,7 @@ echo -e "${CYAN}    Fichier cible : $OUTPUT_VIDEO${NC}"
 
 FFMPEG_LOG="/tmp/ffmpeg_record.log"
 ffmpeg -y -nostdin -loglevel warning \
-  -f x11grab -draw_mouse 0 -video_size 1366x768 -i :99 \
+  -f x11grab -draw_mouse 0 -framerate 25 -video_size 1366x768 -i :99 \
   -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
   "$OUTPUT_VIDEO" > "$FFMPEG_LOG" 2>&1 &
 FFMPEG_PID=$!
@@ -95,12 +95,19 @@ cleanup() {
     rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null || true
 
     if [ -f "$OUTPUT_VIDEO" ]; then
-        cp -f "$OUTPUT_VIDEO" "$LATEST_VIDEO" 2>/dev/null || true
-        FILE_SIZE=$(du -h "$OUTPUT_VIDEO" | cut -f1)
+        echo -e "${CYAN}Optimisation et normalisation fluide 30 FPS de la vidéo...${NC}"
+        TEMP_OPT="${SIM_DIR}/temp_opt_fluid.mp4"
+        ffmpeg -y -i "$OUTPUT_VIDEO" \
+            -filter:v "setpts=0.55*PTS,fps=30" \
+            -c:v libx264 -crf 23 -preset fast -pix_fmt yuv420p -movflags +faststart \
+            "$TEMP_OPT" > /dev/null 2>&1 && mv -f "$TEMP_OPT" "$LATEST_VIDEO" || cp -f "$OUTPUT_VIDEO" "$LATEST_VIDEO"
+        rm -f "$OUTPUT_VIDEO" "$TEMP_OPT" 2>/dev/null || true
+
+        FILE_SIZE=$(du -h "$LATEST_VIDEO" | cut -f1)
         echo -e "\n${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-        echo -e "${GREEN} ✓ VIDÉO ENREGISTRÉE AVEC SUCCÈS ! (100% VISIBLE ET COLORÉE)${NC}"
-        echo -e "${GREEN}   Fichier : $OUTPUT_VIDEO ($FILE_SIZE)${NC}"
-        echo -e "${GREEN}   Lien principal : $LATEST_VIDEO${NC}"
+        echo -e "${GREEN} ✓ NOUVELLE VIDÉO FLUIDE 30 FPS GÉNÉRÉE AVEC SUCCÈS !${NC}"
+        echo -e "${GREEN}   Fichier : $LATEST_VIDEO ($FILE_SIZE)${NC}"
+        echo -e "${GREEN}   Rendu : Vue de dessus globale, dynamique et fluide à 30 FPS${NC}"
         echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
     fi
     exit 0
