@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Présentation Avancement — AMR RAIA 4.0 | ISET Bizerte</title>
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-dark: #0F172A;
+            --amber: #D97706;
+            --gold: #F59E0B;
+            --bg-body: #0F172A;
+            --slide-bg: #F8FAFC;
+            --text-dark: #1E293B;
+            --text-muted: #475569;
+            --border: #E2E8F0;
+            --card-bg: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: #020617;
+            color: #94A3B8;
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1E293B;
+            font-size: 13px;
+        }
+
+        .top-bar .brand {
+            color: #F8FAFC;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .top-bar .brand span {
+            color: var(--gold);
+        }
+
+        .top-bar .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            background: #1E293B;
+            color: #F8FAFC;
+            border: 1px solid #334155;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn.btn-active {
+            background: var(--amber);
+            border-color: var(--amber);
+            color: #FFFFFF;
+        }
+
+        /* Presentation Workspace */
+        .presentation-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+        }
+
+        /* Slide Frame 16:9 Aspect Ratio */
+        .slide-stage {
+            width: 100%;
+            max-width: 1280px;
+            aspect-ratio: 16 / 9;
+            background: var(--slide-bg);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* Header Slide */
+        .slide-header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 16px 36px;
+            border-bottom: 4px solid var(--amber);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .slide-header .cat {
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .slide-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+
+        /* Slide Body 2 Columns */
+        .slide-body {
+            flex: 1;
+            padding: 24px 36px;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 28px;
+            align-items: center;
+            background: var(--slide-bg);
+        }
+
+        .cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-item h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-item p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .slide-image-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFFFFF;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .slide-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Cover Slide Specific */
+        .slide-cover {
+            background: var(--primary-dark);
+            color: white;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            padding: 48px;
+            gap: 36px;
+            height: 100%;
+            align-items: center;
+            border-left: 12px solid var(--amber);
+        }
+
+        .slide-cover .badge {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--gold);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .slide-cover h1 {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            color: #FFFFFF;
+        }
+
+        .slide-cover h1 span {
+            color: var(--gold);
+        }
+
+        .slide-cover .subtitle {
+            font-size: 15px;
+            color: #CBD5E1;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .slide-cover .meta-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(217, 119, 6, 0.4);
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .slide-cover .meta-card strong {
+            color: #FFFFFF;
+        }
+
+        .slide-cover .meta-card span {
+            color: var(--gold);
+        }
+
+        /* Slide Footer */
+        .slide-footer {
+            background: #FFFFFF;
+            border-top: 1px solid var(--border);
+            padding: 8px 36px;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Speaker Notes Panel */
+        .notes-panel {
+            background: #020617;
+            border-top: 2px solid var(--amber);
+            color: #E2E8F0;
+            padding: 16px 24px;
+            max-height: 160px;
+            overflow-y: auto;
+            display: none;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .notes-panel.visible {
+            display: block;
+        }
+
+        .notes-panel h4 {
+            color: var(--gold);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        /* Bottom Controls Bar */
+        .bottom-bar {
+            background: #020617;
+            border-top: 1px solid #1E293B;
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            max-width: 400px;
+            height: 6px;
+            background: #1E293B;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--amber);
+            width: 10%;
+            transition: width 0.3s;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="brand">
+            <span>⚡ AMR RAIA 4.0</span> — ISET Bizerte / Projet HMIDA
+        </div>
+        <div class="controls">
+            <button class="btn" id="toggleNotesBtn" onclick="toggleNotes()">🎙️ Notes de l'Orateur (N)</button>
+            <button class="btn" onclick="toggleFullscreen()">⛶ Plein Écran (F11)</button>
+        </div>
+    </div>
+
+    <!-- Presentation Workspace -->
+    <div class="presentation-container">
+        <div class="slide-stage" id="slideStage">
+
+            <!-- SLIDE 1 : COUVERTURE -->
+            <div class="slide slide-cover active" data-notes="Bonjour à tous et bienvenue à cette soutenance d'avancement technique sur le projet AMR RAIA 4.0. Je m'appelle Khalil Ben Karouia, étudiant en 2ème année mastère à l'ISET de Bizerte sous la direction de M. Hmida. L'objectif de cette présentation est de vous exposer l'ensemble des travaux réalisés : depuis l'architecture logicielle sous ROS 2 Humble et le simulateur Gazebo 11, jusqu'à la validation complète en vidéo du cycle logistique inter-lignes dans un atelier CMS industriel (évitement d'obstacles, sécurité piéton sonore et amarrage de recharge automatique).">
+                <div>
+                    <span class="badge">ISET BIZERTE — MASTÈRE PROFESSIONNEL</span>
+                    <h1>Projet <span>AMR RAIA 4.0</span><br>Robot Mobile Autonome Industriel</h1>
+                    <p class="subtitle">Rapport d'Avancement Technique : Navigation Autonome Inter-Lignes, Sécurité Active & Amarrage Précis</p>
+                    <div class="meta-card">
+                        <div>👤  Réalisé par : <strong>Khalil Ben Karouia</strong> (2ème Année Mastère)</div>
+                        <div>🎯  Encadrant : <span>M. Hmida</span>  |  Projet Industriel RAIA 01.26</div>
+                        <div>📅  Date : <strong>Novembre 2026</strong>  |  Stack : <strong>ROS 2 Humble & Gazebo 11</strong></div>
+                    </div>
+                </div>
+                <div class="slide-image-wrapper">
+                    <img src="images/amr_3d_view.png" alt="AMR RAIA 3D">
+                </div>
+            </div>
+
+            <!-- SLIDE 2 : CONTEXTE ET OBJECTIFS -->
+            <div class="slide" data-notes="Sur cette diapositive, nous posons le contexte industriel du projet. Dans l'industrie électronique actuelle, les lignes de fabrication de composants montés en surface (CMS) produisent des cartes PCB à très haute cadence. Le goulot d'étranglement réside souvent dans la logistique interne. Le cahier des charges RAIA 01.26 impose donc de concevoir un robot mobile capable de desservir de façon autonome deux machines de production clés (la sérigraphie et le convoyeur d'inspection) tout en respectant scrupuleusement la norme ISO 3691-4 régissant la sécurité des véhicules autoguidés en présence d'humains.">
+                <div class="slide-header">
+                    <div class="cat">Cahier des Charges Industriel</div>
+                    <h2>Contexte Industriel & Objectifs Opérationnels (Rapport RAIA 01.26)</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>🏭 Transition Usine 4.0</h3>
+                            <p>Automatisation du transit inter-lignes de cartes électroniques (PCB) au sein d'un atelier CMS moderne, en remplacement des transferts manuels lents et accidentogènes.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🔄 Cycle Logistique Autonome</h3>
+                            <p>Prise en charge automatique : Départ de la borne MiR Charge (ST0) ➔ Récupération du PCB à la sérigraphie MPM (ST1) ➔ Dépose sur convoyeur (ST2) ➔ Retour amarrage ST0.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🛡️ Norme de Sécurité ISO 3691-4</h3>
+                            <p>Cohabitation totale avec les opérateurs d'usine : arrêt d'urgence immédiat sur obstacle mobile, avertisseur sonore, et contournement dynamique des obstacles fixes.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/slide0_factory_workshop_overview.png" alt="Atelier CMS Vue Globale">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>2 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 3 : ARCHITECTURE LOGICIELLE -->
+            <div class="slide" data-notes="Passons maintenant à l'architecture technologique que nous avons mise en place. Nous avons choisi ROS 2 Humble Hawksbill, qui constitue le standard industriel le plus stable et pérenne. La simulation repose sur Gazebo 11 avec le solveur ODE configuré à 250 Hz, ce qui assure une excellente répétabilité odométrique. Au niveau navigation, Nav2 utilise l'algorithme Regulated Pure Pursuit (RPPC). Contrairement aux régulateurs classiques qui peuvent provoquer des saccades ou des oscillations, le RPPC régule la vitesse linéaire en fonction de la courbure et de la proximité des obstacles, garantissant un déplacement souple et sécurisé.">
+                <div class="slide-header">
+                    <div class="cat">Architecture Technique</div>
+                    <h2>Architecture Système & Pile Logicielle ROS 2 Humble</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>⚡ ROS 2 Humble & Fast-DDS</h3>
+                            <p>Middleware temps réel sous Ubuntu 22.04 LTS (WSL2 / Windows 11). Communication nodale robuste et découplée.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🔬 Simulateur Gazebo 11 (ODE)</h3>
+                            <p>Moteur physique haute fidélité réglé à 250 Hz pour un comportement dynamique et odométrique sans dérive.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🧭 Navigation Nav2 & RPPC</h3>
+                            <p>Contrôleur industriel Regulated Pure Pursuit (RPPC) : suivi de trajectoire fluide, gestion des virages et vitesse modulée.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>📍 Localisation AMCL & Costmaps</h3>
+                            <p>Filtre particulaire Monte-Carlo adaptatif couplé aux cartes de coût locale et globale pour l'évitement d'obstacles.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/amr_3d_view.png" alt="AMR 3D Gazebo">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>3 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 4 : ATELIER CMS FACTORY WORKSHOP -->
+            <div class="slide" data-notes="Ici, vous observez la vue de dessus complète de notre monde de simulation factory_workshop.world. L'atelier fait 10 mètres par 10 mètres. Nous y avons disposé : 1. Au Sud : La borne de recharge industrielle MiR Charge (ST0) avec ses marquages jaunes au sol. 2. À l'Est : La machine de sérigraphie MPM Momentum (ST1) où les cartes reçoivent la pâte à braser. 3. À l'Ouest : Le quai convoyeur d'inspection (ST2) pour le contrôle qualité. 4. Au centre : Les lignes directrices au sol et l'allée transversale piétonne. Toutes ces géométries ont été cartographiées sous forme de grille d'occupation 2D pour permettre à la pile Nav2 de localiser le robot et planifier les trajectoires.">
+                <div class="slide-header">
+                    <div class="cat">Environnement Virtuel</div>
+                    <h2>Modélisation de l'Atelier CMS & Cartographie (factory_workshop.world)</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>📐 Atelier 10m x 10m (100 m²)</h3>
+                            <p>Modélisation exacte des murs périmétriques de 2.6m de haut, piliers porteurs et couloirs de circulation normalisés.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🔌 ST0 : Borne MiR Charge (Sud)</h3>
+                            <p>Positionnée à (0.0, -3.80). Station de recharge industrielle 24V DC pour l'attente et le maintien de charge.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🖨️ ST1 : Sérigraphie MPM (Est)</h3>
+                            <p>Positionnée à (1.80, 0.65). Ligne 1 de dépose de pâte à braser où l'AMR prend en charge le PCB terminé.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>📦 ST2 : Convoyeur Inspection (Ouest)</h3>
+                            <p>Positionnée à (-1.80, 0.65). Ligne 2 équipée de rouleaux de convoyage pour l'inspection optique automatisée.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/slide0_factory_workshop_overview.png" alt="Vue Overhead Atelier">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>4 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 5 : SÉCURITÉ ACTIVE PIÉTON & SON -->
+            <div class="slide" data-notes="Cette diapositive illustre l'un des points forts de notre système : la sécurité active certifiée ISO 3691-4. Sur l'image de droite, on voit l'opérateur en gilet haute visibilité et casque jaune traverser l'allée centrale. Notre nœud de supervision scanne le champ frontal avec le LiDAR 2D Hokuyo. Dès que l'employé pénètre dans le polygone de sécurité (distance inférieure à 1.05m), deux actions simultanées ont lieu : 1. Arrêt matériel d'urgence : la consigne de vitesse est immédiatement forcée à 0. 2. Activation de la sirène/mélodie sonore amr_safety_melody.wav pour prévenir l'opérateur. Dès que l'opérateur termine sa traversée, le système détecte le dégagement, coupe la mélodie et ré-engage la navigation de manière autonome.">
+                <div class="slide-header">
+                    <div class="cat">Sécurité Opérateur ISO 3691-4</div>
+                    <h2>Sécurité Active : Détection Piéton & Avertisseur Sonore Industriel</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>🚶 Détection d'Obstacle Mobile</h3>
+                            <p>L'opérateur piéton traverse l'allée centrale à y = -1.60m. Le LiDAR 2D Hokuyo le détecte à d = 1.01m.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🛑 Arrêt d'Urgence Instantané</h3>
+                            <p>Dès franchissement du gabarit de sécurité (Protection Field), la commande moteur est coupée immédiatement (cmd_vel = 0) en moins de 100 ms.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🔊 Diffusion de l'Avertisseur Sonore</h3>
+                            <p>Déclenchement automatique de la mélodie industrielle d'avertissement (amr_safety_melody.wav) via le transducteur pour alerter l'humain.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>▶️ Reprise Autonome sans Reset</h3>
+                            <p>Dès que l'opérateur a achevé sa traversée et dégagé le gabarit, l'alarme s'arrête et l'AMR reprend sa trajectoire vers ST1.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/slide2_worker_detection_stop.png" alt="Arrêt Sécurité Piéton">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>5 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 6 : ÉVITEMENT CHARIOT FIXE -->
+            <div class="slide" data-notes="Voici la démonstration de la capacité d'évitement autonome d'un obstacle fixe non répertorié sur la carte d'origine. Un chariot de maintenance bleu ciel a été placé au carrefour central (x=0.0, y=0.65), en plein sur la ligne droite reliant ST1 à ST2. Un chariot AGV traditionnel à bande magnétique se serait arrêté indéfiniment en attendant l'intervention d'un technicien. Notre AMR RAIA 4.0, au contraire, utilise la mise à jour dynamique de ses costmaps : il identifie l'obstacle, calcule une courbe de déviation par le Nord (y=1.25m) et contourne le chariot avec plus de 60 cm de marge de sécurité, assurant ainsi la continuité ininterrompue de la chaîne de production.">
+                <div class="slide-header">
+                    <div class="cat">Autonomie Décisionnelle Nav2</div>
+                    <h2>Évitement Dynamique d'Obstacle Fixe : Contournement du Chariot</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>🛒 Obstacle Imprévu au Carrefour</h3>
+                            <p>Un chariot technique de maintenance est abandonné au centre du carrefour (x=0.0, y=0.65), bloquant l'axe direct ST1 ➔ ST2.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🌐 Détection Dynamique Costmap</h3>
+                            <p>Le LiDAR intègre le chariot en direct dans la costmap locale et globale de Nav2 sous forme de zone de coût de collision interdit.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>↪️ Calcul de Courbe de Déviation</h3>
+                            <p>Le planificateur Navfn et le contrôleur RPPC recalculent instantanément une trajectoire d'évitement en boucle par le couloir Nord (y ≈ 1.25m).</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🛡️ Marge de Sécurité > 0.60m</h3>
+                            <p>L'AMR maintient un dégagement latéral de plus de 60 cm par rapport au chariot, évitant tout contact avant d'arriver au poste ST2.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/slide4_cart_avoidance_curve.png" alt="Contournement Chariot Fixe">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>6 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 7 : CYCLE LOGISTIQUE INTER-LIGNES -->
+            <div class="slide" data-notes="Sur cette diapositive, nous détaillons le cycle logistique métier entre les deux lignes de production. À la station ST1 (sérigraphie MPM Momentum), le robot s'amarre avec une précision remarquable de 21 cm. Une temporisation de 3.5 secondes simule le transfert mécanique de la carte PCB sérigraphiée sur le plateau de l'AMR. Ensuite, après évitement de l'obstacle central, l'AMR rejoint la station ST2 (convoyeur d'inspection) avec un écart de seulement 15 cm. Le PCB est transféré sur les rouleaux pour l'inspection optique automatisée. Tous ces événements sont publiés sur le topic ROS 2 /mission_state, permettant aux systèmes de supervision MES et ERP de suivre la traçabilité de chaque lot de fabrication en temps réel.">
+                <div class="slide-header">
+                    <div class="cat">Processus Industriel CMS</div>
+                    <h2>Cycle de Production Inter-Lignes : Transfert de Cartes PCB</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>📥 Étape 1 : Prise PCB à ST1 (Sérigraphie)</h3>
+                            <p>Arrivée de haute précision face à la sérigraphie MPM à (1.80, 0.65) avec un écart de 21 cm. Chargement automatique de la carte (3.5s).</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>📤 Étape 2 : Dépose PCB à ST2 (Convoyeur)</h3>
+                            <p>Navigation vers le convoyeur d'inspection à (-1.80, 0.65) avec un écart de 15 cm. Transfert automatique sur les rouleaux d'entraînement.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>📡 Supervision & Traçabilité MES</h3>
+                            <p>Chaque transition d'état (chargement, transit, déchargement) est notifiée sur le topic /mission_state pour intégration directe au MES.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🎯 Répétabilité & Efficacité</h3>
+                            <p>Cycle de mission complet réalisé en 1 min 02s avec 100% de succès opérationnel et zéro incident matériel.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/slide3_st1_pcb_pickup.png" alt="Accostage ST1 Sérigraphie">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>7 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 8 : BORNE MIR CHARGE 24V -->
+            <div class="slide" data-notes="L'un des défis majeurs dans la robotique mobile autonome industrielle est la gestion de l'énergie. Comme vous le voyez en haut à droite, nous nous sommes basés sur les spécifications de la borne industrielle MiR Charge. En bas à droite, notre simulation montre l'amarrage de précision : l'AMR effectue une manœuvre finale d'alignement de cap (90°) pour venir enficher ses plots récepteurs sur les broches 24V de la station, avec une tolérance inférieure à 15 cm. Dès l'accostage réussi, le robot bascule en mode recharge et reste en veille active jusqu'à la réception d'un nouvel ordre de mission.">
+                <div class="slide-header">
+                    <div class="cat">Gestion de l'Énergie</div>
+                    <h2>Station de Recharge Industrielle MiR Charge 24V & Docking Final</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>🔌 Modèle Industriel MiR Charge</h3>
+                            <p>Inspiré de la borne réelle Mobile Industrial Robots (MiR Charge 24V/48V) avec plots de contact rétractables en façade.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🎯 Amarrage Terminal de Précision</h3>
+                            <p>Retour au quai Sud à (0.0, -3.80) avec un écart de positionnement inférieur à 15 cm et un écart de cap sous 17°.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>⚡ Connexion Électrique Automatique</h3>
+                            <p>Couplage mécanique direct entre les récepteurs de l'AMR et les broches 24V DC pour la recharge rapide des batteries LiFePO4.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🛡️ Autonomie Totale en Atelier</h3>
+                            <p>Cycle sans aucune intervention humaine de câblage : maintien en charge permanente en attendant le prochain appel de ligne.</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:12px; height:100%;">
+                        <div class="slide-image-wrapper" style="height:48%;">
+                            <img src="images/mir_charge_hardware.png" alt="Borne MiR Charge Réelle">
+                        </div>
+                        <div class="slide-image-wrapper" style="height:48%;">
+                            <img src="images/slide6_final_docking_mir.png" alt="Docking 24V Simulation">
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>8 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 9 : OPTIMISATION ET PERFORMANCE 30 FPS -->
+            <div class="slide" data-notes="Sur le plan technique et informatique, nous avons surmonté plusieurs défis d'optimisation notables. Premièrement, l'environnement WSL2 de Windows 11 utilise un serveur Wayland WSLg sans racine X11, ce qui provoquait initialement un écran noir lors des captures vidéo. Nous avons conçu une architecture avec serveur virtuel Xvfb 24 bits et gestionnaire Openbox. Deuxièmement, le LiDAR affichait 360 rayons volumétriques bleus qui saturaient le GPU à 3 FPS. En basculant la visualisation à false (tout en gardant le topic ROS /scan 100% opérationnel pour Nav2), et en désactivant les ombres dynamiques, nous avons considérablement fluidifié le système. Enfin, nous avons normalisé la vidéo finale à 30 FPS constants (taille réduite à 552 Ko), permettant une lecture directe et instantanée sur GitHub.">
+                <div class="slide-header">
+                    <div class="cat">Optimisation & Performance</div>
+                    <h2>Optimisations Techniques & Performance de Simulation (30 FPS)</h2>
+                </div>
+                <div class="slide-body">
+                    <div class="cards-list">
+                        <div class="card-item">
+                            <h3>🖥️ Résolution Écran Noir WSLg</h3>
+                            <p>Mise en place d'un serveur virtuel Xvfb dédié avec framebuffer 24-bit RGB (1366x768), éliminant l'absence de root window sous WSLg.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🚀 Allégement Rendu Graphique</h3>
+                            <p>Désactivation de l'affichage des 360 rayons LiDAR dans Gazebo (visualize=false) et des ombres lourdes : division par 3 de la charge GPU/CPU.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>🎞️ Normalisation 30 FPS Constants</h3>
+                            <p>Encodage vidéo H.264 ultra-fluide à 30 FPS constants avec accélération de cadence : visionnage dynamique en 1 min 02s au lieu de 2 min saccadées.</p>
+                        </div>
+                        <div class="card-item">
+                            <h3>⚖️ Intégrité Physique ODE 250 Hz</h3>
+                            <p>Maintien de la boucle physique à 250 Hz (pas de 4 ms) pour garantir la fidélité de l'odométrie et éliminer toute dérive des roues.</p>
+                        </div>
+                    </div>
+                    <div class="slide-image-wrapper">
+                        <img src="images/slide1_mir_charge_dock.png" alt="Départ Borne ST0">
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>9 / 10</span>
+                </div>
+            </div>
+
+            <!-- SLIDE 10 : BILAN ET PERSPECTIVES -->
+            <div class="slide" data-notes="Pour conclure cette soutenance d'avancement, nous pouvons affirmer que 100% des objectifs fixés pour cette étape de simulation ont été atteints avec succès. L'AMR RAIA 4.0 démontre une autonomie complète, une sécurité active conforme à l'ISO 3691-4 avec signal sonore, un évitement dynamique d'obstacles et une précision d'amarrage conforme aux contraintes industrielles. La prochaine étape consistera à transposer cette pile logicielle sur le prototype physique réel, en y associant un asservissement fin par marqueurs visuels AprilTag et la communication avec le superviseur MES. Je vous remercie vivement pour votre attention et je suis désormais à votre disposition pour répondre à toutes vos questions.">
+                <div class="slide-header">
+                    <div class="cat">Conclusion & Perspectives</div>
+                    <h2>Synthèse de l'Avancement & Prochains Jalons</h2>
+                </div>
+                <div class="slide-body" style="grid-template-columns: 1fr 1fr; align-items: stretch;">
+                    <div class="card-item" style="border-left-color: #16A34A; background: #F0FDF4; display:flex; flex-direction:column; justify-content:space-between;">
+                        <h3 style="color:#166534; font-size:15px; margin-bottom:10px;">✅  Bilan des Résultats Validés (100%)</h3>
+                        <ul style="font-size:12px; color:#1E293B; line-height:1.7; padding-left:18px;">
+                            <li>Modélisation complète de l'atelier CMS (10m x 10m) sous Gazebo 11 ODE.</li>
+                            <li>Navigation autonome Nav2 inter-lignes (ST0 ➔ ST1 ➔ ST2 ➔ ST0).</li>
+                            <li>Sécurité piéton ISO 3691-4 : arrêt d'urgence + avertisseur sonore d'alerte.</li>
+                            <li>Évitement dynamique d'obstacle fixe avec contournement par courbe Nord.</li>
+                            <li>Amarrage de haute précision aux plots 24V de la borne MiR Charge.</li>
+                            <li>Dépôt GitHub synchronisé avec code source, documentation et vidéo HD 30 FPS.</li>
+                        </ul>
+                    </div>
+                    <div class="card-item" style="border-left-color: var(--primary); background: #EEF2FF; display:flex; flex-direction:column; justify-content:space-between;">
+                        <h3 style="color:var(--primary); font-size:15px; margin-bottom:10px;">🎯  Perspectives & Prochains Jalons</h3>
+                        <ul style="font-size:12px; color:#1E293B; line-height:1.7; padding-left:18px;">
+                            <li><strong>Intégration Hardware :</strong> Déploiement sur châssis physique (LiDAR Hokuyo/RPLiDAR, STM32 et Nvidia Jetson).</li>
+                            <li><strong>Gestion Flotte & MES :</strong> Interfaçage avec le logiciel de supervision d'usine (Open-RMF, MQTT / OPC-UA).</li>
+                            <li><strong>Optimisation Docking :</strong> Asservissement visuel sur mires AprilTag ou réflecteurs laser haute précision.</li>
+                            <li><strong>Validation Industrielle :</strong> Essais en conditions réelles sur la ligne d'assemblage de l'ISET Bizerte.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <span>ISET Bizerte — Mastère Professionnel / Projet HMIDA</span>
+                    <span>10 / 10</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Speaker Notes Panel -->
+    <div class="notes-panel" id="notesPanel">
+        <h4>🎙️ Script Oral de Présentation (Notes Orateur) :</h4>
+        <div id="notesText"></div>
+    </div>
+
+    <!-- Bottom Controls Bar -->
+    <div class="bottom-bar">
+        <div style="color: #94A3B8; font-size: 13px; font-weight: 600;" id="slideIndicator">Diapositive 1 / 10</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="nav-arrows">
+            <button class="btn" onclick="prevSlide()">◀ Précédent</button>
+            <button class="btn btn-active" onclick="nextSlide()">Suivant ▶</button>
+        </div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        const slideIndicator = document.getElementById('slideIndicator');
+        const progressBar = document.getElementById('progressBar');
+        const notesPanel = document.getElementById('notesPanel');
+        const notesText = document.getElementById('notesText');
+        const toggleNotesBtn = document.getElementById('toggleNotesBtn');
+
+        function updateSlide() {
+            slides.forEach((s, idx) => {
+                s.classList.toggle('active', idx === currentSlide);
+            });
+            slideIndicator.innerText = `Diapositive ${currentSlide + 1} / ${totalSlides}`;
+            progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+
+            const currentNotes = slides[currentSlide].getAttribute('data-notes') || 'Aucune note pour cette diapositive.';
+            notesText.innerText = currentNotes;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        function toggleNotes() {
+            notesPanel.classList.toggle('visible');
+            toggleNotesBtn.classList.toggle('btn-active');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                prevSlide();
+            } else if (e.key === 'n' || e.key === 'N') {
+                toggleNotes();
+            } else if (e.key === 'Home') {
+                currentSlide = 0;
+                updateSlide();
+            } else if (e.key === 'End') {
+                currentSlide = totalSlides - 1;
+                updateSlide();
+            }
+        });
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>
