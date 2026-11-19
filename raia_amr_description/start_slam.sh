@@ -46,14 +46,15 @@ fi
 # ── 4. Lancement SLAM ───────────────────────────────────────────
 echo -e "\n${YELLOW}[4/4] Lancement Gazebo + SLAM Toolbox + RViz2...${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
-echo -e "${YELLOW}  → Ouvrez un SECOND terminal et lancez :${NC}"
-echo -e "${GREEN}     ros2 run teleop_twist_keyboard teleop_twist_keyboard${NC}"
-echo -e "${YELLOW}  → Pilotez le robot dans toute l'usine (i=avant, ,=arrière, j/l=rotation, k=stop)${NC}"
-echo -e "${YELLOW}  → Quand la carte est complète, ouvrez un 3ème terminal :${NC}"
-echo -e "${GREEN}     ros2 run nav2_map_server map_saver_cli -f ~/ros2_ws/src/raia_amr_description/maps/raia_factory_map${NC}"
+echo -e "${YELLOW}  Option 1 (Recommandée — Tout-en-un avec sauvegarde directe 'M') :${NC}"
+echo -e "${GREEN}     bash start_manual_mapping.sh${NC}"
+echo -e "${YELLOW}  Option 2 (Terminal séparé) :${NC}"
+echo -e "     Ouvrez un 2ème terminal et lancez le pilotage manuel :"
+echo -e "${GREEN}     python3 manual_teleop.py${NC}"
+echo -e "${YELLOW}     (Touches ZQSD ou flèches, Espace=stop, M=sauvegarder la carte)${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${YELLOW}  Appuyez sur Entrée pour démarrer...${NC}"
+echo -e "${YELLOW}  Appuyez sur Entrée pour démarrer SLAM...${NC}"
 read
 
 ros2 launch raia_amr_description slam.launch.py

@@ -42,55 +42,20 @@ rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 /dev/shm/fastrtps_* /dev/shm/sem.fastrtp
 sleep 1
 echo -e "${GREEN}    ✓ Environnement propre${NC}"
 
-# 3. Démarrage du serveur graphique virtuel Xvfb dédié à l'enregistrement vidéo réel (Résout l'écran noir de WSLg)
-echo -e "\n${YELLOW}[2/5] Initialisation du framebuffer virtuel Xvfb (1366x768 24-bit RGB)...${NC}"
-Xvfb :99 -screen 0 1366x768x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
-XVFB_PID=$!
-sleep 1
-
-export DISPLAY=:99
-openbox > /dev/null 2>&1 &
-OPENBOX_PID=$!
-sleep 1
-
 # Variables d'environnement de simulation et audio
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=Intel
 export GAZEBO_MODEL_DATABASE_URI=""
 export FASTRTPS_DEFAULT_PROFILES_FILE=$HOME/fastdds_udp_only.xml
 export PULSE_SERVER=/mnt/wslg/PulseServer
-
-source /opt/ros/humble/setup.bash
-cd ~/ros2_ws
-colcon build --symlink-install --packages-select raia_amr_description > /dev/null 2>&1 || true
-source ~/ros2_ws/install/setup.bash
-cd ~/ros2_ws/src/raia_amr_description
-
-# 4. Lancement de l'enregistreur vidéo ffmpeg sur l'affichage virtuel :99
-echo -e "\n${YELLOW}[3/5] Démarrage de la capture vidéo directe (ffmpeg x11grab :99)...${NC}"
-echo -e "${CYAN}    Fichier cible : $OUTPUT_VIDEO${NC}"
-
-FFMPEG_LOG="/tmp/ffmpeg_record.log"
-ffmpeg -y -nostdin -loglevel warning \
-  -f x11grab -draw_mouse 0 -framerate 25 -video_size 1366x768 -i :99 \
-  -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
-  "$OUTPUT_VIDEO" > "$FFMPEG_LOG" 2>&1 &
-FFMPEG_PID=$!
-sleep 1
-
-if ! kill -0 $FFMPEG_PID 2>/dev/null; then
-    echo -e "${RED}    ✗ Erreur lors du lancement de ffmpeg :${NC}"
-    cat "$FFMPEG_LOG"
-    exit 1
-fi
-echo -e "${GREEN}    ✓ Enregistreur vidéo actif (PID $FFMPEG_PID)${NC}"
+export DISPLAY=:99
 
 cleanup() {
     echo -e "\n${YELLOW}Arrêt de l'enregistrement et finalisation de la vidéo...${NC}"
-    if kill -0 $FFMPEG_PID 2>/dev/null; then
+    if [ -n "$FFMPEG_PID" ] && kill -0 $FFMPEG_PID 2>/dev/null; then
         kill -2 $FFMPEG_PID 2>/dev/null || true
         wait $FFMPEG_PID 2>/dev/null || true
     fi
-    kill -9 $LAUNCH_PID $WORKER_PID $OPENBOX_PID $XVFB_PID $MAXIMIZER_PID 2>/dev/null || true
+    kill -9 $LAUNCH_PID $WORKER_PID $WEB_PID $OPENBOX_PID $XVFB_PID $MAXIMIZER_PID 2>/dev/null || true
     killall -9 gzserver gzclient robot_state_publisher component_container_isolated component_container rviz2 python3 Xvfb openbox 2>/dev/null || true
     rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null || true
 
@@ -114,8 +79,29 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM
 
-# 5. Lancement Gazebo + Nav2 sur l'affichage virtuel
-echo -e "\n${YELLOW}[4/5] Démarrage de Gazebo et de la pile Nav2 sur :99...${NC}"
+source /opt/ros/humble/setup.bash
+cd ~/ros2_ws
+colcon build --symlink-install --packages-select raia_amr_description > /dev/null 2>&1 || true
+source ~/ros2_ws/install/setup.bash
+cd ~/ros2_ws/src/raia_amr_description
+
+# Inscription préventive des obstacles fixes et zones interdites (Keep-Out Zones) sur la carte
+echo -e "\n${YELLOW}Application des obstacles fixes et des champs interdits sur la carte...${NC}"
+python3 ~/ros2_ws/src/raia_amr_description/apply_fixed_obstacles_and_keepout.py
+
+# 3. Démarrage du serveur graphique virtuel Xvfb dédié à l'enregistrement vidéo réel (Résout l'écran noir de WSLg)
+echo -e "\n${YELLOW}[2/5] Initialisation du framebuffer virtuel Xvfb (1366x768 24-bit RGB)...${NC}"
+rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null || true
+Xvfb :99 -screen 0 1366x768x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+XVFB_PID=$!
+sleep 1.5
+
+openbox > /dev/null 2>&1 &
+OPENBOX_PID=$!
+sleep 1
+
+# 4. Lancement Gazebo + Nav2 sur l'affichage virtuel :99
+echo -e "\n${YELLOW}[3/5] Démarrage de Gazebo et de la pile Nav2 sur :99...${NC}"
 MAP_PATH="${1:-$HOME/ros2_ws/src/raia_amr_description/maps/raia_factory_map.yaml}"
 LOG_FILE="/tmp/nav2_launch.log"
 rm -f "$LOG_FILE"
@@ -137,7 +123,7 @@ MAXIMIZER_PID=$!
 
 READY_LOC=0
 READY_NAV=0
-for i in {1..70}; do
+for i in {1..80}; do
     if [ $READY_LOC -eq 0 ] && grep -q "lifecycle_manager_localization.*Managed nodes are active" "$LOG_FILE" 2>/dev/null; then
         READY_LOC=1
     fi
@@ -156,23 +142,47 @@ if [ $READY_LOC -eq 1 ] && [ $READY_NAV -eq 1 ]; then
     echo -e "${GREEN}    ✓ Nœuds Nav2 actifs et carte chargée.${NC}"
 else
     echo -e "${RED}    ✗ Délai d'attente Nav2 dépassé.${NC}"
+    tail -n 25 "$LOG_FILE"
     cleanup
 fi
 
 sleep 6
 
-# 6. Démarrage de l'obstacle mobile (Traversée piéton)
-echo -e "\n${YELLOW}[5/5] Activation de l'obstacle mobile piéton et exécution de la mission...${NC}"
+# 5. Démarrage du serveur Web (port 8080) et de l'obstacle mobile piéton
+echo -e "\n${YELLOW}[4/5] Démarrage du serveur Web (port 8080) et de l'obstacle mobile...${NC}"
+python3 ~/ros2_ws/src/raia_amr_description/web_server.py 8080 > /dev/null 2>&1 &
+WEB_PID=$!
+sleep 1
 python3 ~/ros2_ws/src/raia_amr_description/worker_patrol.py > /dev/null 2>&1 &
 WORKER_PID=$!
 sleep 1
+echo -e "${GREEN}    ✓ Interface Web prête sur http://localhost:8080${NC}"
 echo -e "${GREEN}    ✓ Opérateur piéton positionné sur le couloir de transit${NC}"
+
+# 6. Démarrage de la capture vidéo directe (ffmpeg x11grab :99)
+echo -e "\n${YELLOW}[5/5] Démarrage de l'enregistrement vidéo HD fluide de la mission...${NC}"
+echo -e "${CYAN}    Fichier cible : $OUTPUT_VIDEO${NC}"
+
+FFMPEG_LOG="/tmp/ffmpeg_record.log"
+ffmpeg -y -nostdin -loglevel warning \
+  -f x11grab -draw_mouse 0 -framerate 25 -video_size 1366x768 -i :99 \
+  -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
+  "$OUTPUT_VIDEO" > "$FFMPEG_LOG" 2>&1 &
+FFMPEG_PID=$!
+sleep 1
+
+if ! kill -0 $FFMPEG_PID 2>/dev/null; then
+    echo -e "${RED}    ✗ Erreur lors du lancement de ffmpeg :${NC}"
+    cat "$FFMPEG_LOG"
+    exit 1
+fi
+echo -e "${GREEN}    ✓ Enregistreur vidéo actif (PID $FFMPEG_PID)${NC}"
 
 # Exécution de la mission
 python3 -u ~/ros2_ws/src/raia_amr_description/run_mission.py || true
 
 # Temporisation pour visualiser l'amarrage final à la borne MiR Charge
-sleep 4
+sleep 6
 
 echo -e "\n${GREEN}Mission terminée ! Finalisation du fichier vidéo...${NC}"
 cleanup

@@ -59,9 +59,9 @@ def main():
 
     start_sync = time.time()
     tf_ready = False
-    while (time.time() - start_sync) < 25.0:
+    while (time.time() - start_sync) < 30.0:
         rclpy.spin_once(nav_mgr, timeout_sec=0.2)
-        if nav_mgr.update_robot_pose():
+        if nav_mgr.update_robot_pose() or nav_mgr.has_pose:
             tf_ready = True
             print(f" -> Pose AMR synchronisée : ({nav_mgr.current_x:.2f}, {nav_mgr.current_y:.2f}), Cap : {math.degrees(nav_mgr.current_yaw):.1f}°")
             break
@@ -148,7 +148,7 @@ def main():
     nav_mgr.publish_mission_state("RETURNING_TO_CHARGING_STATION")
     success3 = nav_mgr.navigate_to_station(
         "ST0",
-        timeout_sec=120.0,
+        timeout_sec=180.0,
         dwell_time_sec=3.0,
         dwell_action_desc="Connexion automatique aux plots de recharge 24V DC du dock central"
     )

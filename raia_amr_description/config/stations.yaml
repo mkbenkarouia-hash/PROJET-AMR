@@ -19,7 +19,7 @@ stations:
     id: "ST1"
     name: "Ligne 1 - Sérigraphie MPM Momentum (Prise PCB)"
     description: "Poste d'impression de pâte à braser - Récupération de la carte PCB"
-    x: 1.80
+    x: 1.50
     y: 0.65
     theta: 1.5708               # rad (+90° face à la ligne MPM)
 
@@ -27,7 +27,7 @@ stations:
     id: "ST2"
     name: "Ligne 2 - Quai Convoyeur & Transfert PCB"
     description: "Convoyeur automatique d'acheminement et dépose de la carte PCB"
-    x: -1.80
+    x: -1.50
     y: 0.65
     theta: -1.5708              # rad (-90° face au quai de transfert et vers le retour borne)
 

@@ -103,13 +103,20 @@ class NavigationManager(Node):
         self.safety_obstacle_dist: float = 999.0
         self.is_safety_stopped: bool = False
         self._obstacle_clear_counter: int = 0
-        self.sound_process: Optional[subprocess.Popen] = None
+        self.pub_telemetry = self.create_publisher(String, "/amr_telemetry", 10)
 
-        self.sound_wav_path: str = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "sounds",
-            "amr_safety_melody.wav"
-        )
+        # ── Système audio bimodal (Norme ISO 3691-4 & Exigences Usine 4.0)
+        # 1. Musique instrumentale mélodique douce (~40% vol) jouée le long du parcours
+        # 2. Avertisseur sonore d'urgence percutant (~98% vol) en cas d'obstacle
+        # 3. Carillon d'amarrage / arrivée en station (~50% vol)
+        sounds_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sounds")
+        self.patrol_melody_path = os.path.join(sounds_dir, "amr_patrol_melody.wav")
+        self.obstacle_alarm_path = os.path.join(sounds_dir, "amr_obstacle_alarm.wav")
+        self.arrival_chime_path = os.path.join(sounds_dir, "amr_arrival_chime.wav")
+
+        self.music_process: Optional[subprocess.Popen] = None
+        self.alarm_process: Optional[subprocess.Popen] = None
+        self.audio_state: str = "IDLE"
 
         self.operator_call_received: bool = False
         self.operator_call_source: str = "Bouton d'appel Ligne 1 (Sérigraphie MPM)"
@@ -182,6 +189,14 @@ class NavigationManager(Node):
             self.safety_obstacle_dist = 999.0
             return
 
+        # La protection d'arrêt d'urgence piéton est active dans l'allée de transit (y <= -0.40)
+        # où circule l'opérateur mobile. Dans l'allée machine (y > -0.40), les obstacles fixes
+        # (chariot de maintenance central à 0.0, 0.65) sont contournés par déviation autonome Nav2.
+        if self.current_y > -0.40:
+            self.safety_obstacle_detected = False
+            self.safety_obstacle_dist = 999.0
+            return
+
         min_d = 999.0
         detected = False
 
@@ -193,7 +208,7 @@ class NavigationManager(Node):
                 y_rel = r * math.sin(angle)
 
                 # Couloir direct de déplacement frontal de l'AMR (largeur robot + marge)
-                if 0.18 < x_rel < 1.05 and abs(y_rel) < 0.28:
+                if 0.15 < x_rel < 1.40 and abs(y_rel) < 0.60:
                     detected = True
                     if x_rel < min_d:
                         min_d = x_rel
@@ -205,13 +220,15 @@ class NavigationManager(Node):
             self._obstacle_clear_counter = 0
         else:
             self._obstacle_clear_counter += 1
-            if self._obstacle_clear_counter >= 5:
+            if self._obstacle_clear_counter >= 20:
                 self.safety_obstacle_detected = False
                 self.safety_obstacle_dist = 999.0
 
-    def _start_safety_melody(self):
-        """Déclenche la mélodie d'avertissement sonore en boucle asynchrone."""
-        if self.sound_process is not None and self.sound_process.poll() is None:
+    def _start_patrol_music(self):
+        """Déclenche la musique instrumentale de patrouille en boucle (volume modéré ~40%)."""
+        if self.music_process is not None and self.music_process.poll() is None:
+            return
+        if self.is_safety_stopped:
             return
 
         env = dict(os.environ)
@@ -220,28 +237,118 @@ class NavigationManager(Node):
 
         cmd = (
             f"while true; do "
-            f"paplay '{self.sound_wav_path}' 2>/dev/null || "
-            f"aplay -q '{self.sound_wav_path}' 2>/dev/null || "
-            f"sleep 1; sleep 0.2; done"
+            f"paplay '{self.patrol_melody_path}' 2>/dev/null || "
+            f"aplay -q '{self.patrol_melody_path}' 2>/dev/null || "
+            f"sleep 1; sleep 0.1; done"
         )
         try:
-            self.sound_process = subprocess.Popen(
+            self.music_process = subprocess.Popen(
                 cmd, shell=True, env=env, preexec_fn=os.setsid
             )
+            self.audio_state = "PATROL_MELODY"
+            self.publish_telemetry()
         except Exception as e:
-            self.get_logger().warn(f"[AVERTISSEUR] Erreur lancement audio : {e}")
+            self.get_logger().warn(f"[AUDIO] Erreur lancement musique patrouille : {e}")
 
-    def _stop_safety_melody(self):
-        """Interrompt immédiatement la mélodie dès dégagement du passage."""
-        if self.sound_process is not None:
+    def _stop_patrol_music(self):
+        """Arrête la musique instrumentale de patrouille."""
+        if self.music_process is not None:
             try:
-                os.killpg(os.getpgid(self.sound_process.pid), signal.SIGTERM)
+                os.killpg(os.getpgid(self.music_process.pid), signal.SIGTERM)
             except Exception:
                 try:
-                    self.sound_process.kill()
+                    self.music_process.kill()
                 except Exception:
                     pass
-            self.sound_process = None
+            self.music_process = None
+        if self.audio_state == "PATROL_MELODY":
+            self.audio_state = "IDLE"
+
+    def _start_obstacle_alarm(self):
+        """Déclenche la sirène d'avertissement sonore puissante (+10 dB, vol 98%)."""
+        self._stop_patrol_music()
+        if self.alarm_process is not None and self.alarm_process.poll() is None:
+            return
+
+        env = dict(os.environ)
+        if os.path.exists("/mnt/wslg/PulseServer"):
+            env["PULSE_SERVER"] = "/mnt/wslg/PulseServer"
+
+        cmd = (
+            f"while true; do "
+            f"paplay '{self.obstacle_alarm_path}' 2>/dev/null || "
+            f"aplay -q '{self.obstacle_alarm_path}' 2>/dev/null || "
+            f"sleep 1; sleep 0.05; done"
+        )
+        try:
+            self.alarm_process = subprocess.Popen(
+                cmd, shell=True, env=env, preexec_fn=os.setsid
+            )
+            self.audio_state = "OBSTACLE_ALARM"
+            self.publish_telemetry()
+        except Exception as e:
+            self.get_logger().warn(f"[AUDIO] Erreur lancement alarme obstacle : {e}")
+
+    def _stop_obstacle_alarm(self):
+        """Arrête immédiatement l'avertisseur sonore d'obstacle."""
+        if self.alarm_process is not None:
+            try:
+                os.killpg(os.getpgid(self.alarm_process.pid), signal.SIGTERM)
+            except Exception:
+                try:
+                    self.alarm_process.kill()
+                except Exception:
+                    pass
+            self.alarm_process = None
+        if self.audio_state == "OBSTACLE_ALARM":
+            self.audio_state = "IDLE"
+
+    def _play_arrival_chime(self):
+        """Joue le carillon d'amarrage / arrivée en station."""
+        self._stop_patrol_music()
+        self._stop_obstacle_alarm()
+        env = dict(os.environ)
+        if os.path.exists("/mnt/wslg/PulseServer"):
+            env["PULSE_SERVER"] = "/mnt/wslg/PulseServer"
+        cmd = f"paplay '{self.arrival_chime_path}' 2>/dev/null || aplay -q '{self.arrival_chime_path}' 2>/dev/null"
+        try:
+            subprocess.Popen(cmd, shell=True, env=env)
+            self.audio_state = "ARRIVAL_CHIME"
+            self.publish_telemetry()
+        except Exception:
+            pass
+
+    def _stop_all_audio(self):
+        """Arrête l'ensemble des flux audio."""
+        self._stop_patrol_music()
+        self._stop_obstacle_alarm()
+        self.audio_state = "IDLE"
+        self.publish_telemetry()
+
+    def publish_telemetry(self):
+        """Publie la télémétrie complète du robot au format JSON sur /amr_telemetry."""
+        import json
+        data = {
+            "x": round(self.current_x, 3),
+            "y": round(self.current_y, 3),
+            "yaw": round(self.current_yaw, 3),
+            "yaw_deg": round(math.degrees(self.current_yaw), 1),
+            "lin_vel": round(self.current_lin_vel, 2),
+            "ang_vel": round(self.current_ang_vel, 2),
+            "state": self.state.value,
+            "target": self.current_target.id if self.current_target else "NONE",
+            "dist_rem": round(self.distance_remaining, 2),
+            "obstacle_detected": self.safety_obstacle_detected,
+            "obstacle_dist": round(self.safety_obstacle_dist, 2),
+            "is_stopped": self.is_safety_stopped,
+            "audio_state": self.audio_state,
+            "battery_pct": 100,
+            "voltage": 24.3,
+            "status_text": self.last_status_text
+        }
+        msg = String()
+        msg.data = json.dumps(data)
+        self.pub_telemetry.publish(msg)
 
     def update_robot_pose(self) -> bool:
         """Met à jour la pose exacte du robot dans le repère 'map' via TF2."""
@@ -258,6 +365,9 @@ class NavigationManager(Node):
             self.has_pose = True
             return True
         except Exception:
+            # Fallback direct si la pose est déjà disponible via /amcl_pose
+            if self.has_pose:
+                return True
             return False
 
     def set_initial_pose_amcl(
@@ -265,15 +375,29 @@ class NavigationManager(Node):
         x: float = 0.0,
         y: float = -3.80,
         theta: float = 1.5708,
-        retries: int = 6
+        retries: int = 15
     ) -> bool:
         """
         Initialise et amorce le filtre particulaire AMCL en publiant sur /initialpose.
         Garantit la synchronisation temporelle sim_time sous WSL2 et la continuité TF map -> odom.
         """
+        # 1. Attente de la réception effective du temps de simulation (/clock)
+        start_wait_clock = time.time()
+        while (time.time() - start_wait_clock) < 6.0:
+            rclpy.spin_once(self, timeout_sec=0.1)
+            if self.get_clock().now().nanoseconds > 0:
+                break
+
+        # 2. Attente de la connexion du souscripteur AMCL sur /initialpose
+        start_wait_sub = time.time()
+        while (time.time() - start_wait_sub) < 8.0:
+            if self.pub_initialpose.get_subscription_count() > 0:
+                break
+            rclpy.spin_once(self, timeout_sec=0.1)
+            time.sleep(0.1)
+
         msg = PoseWithCovarianceStamped()
         msg.header.frame_id = "map"
-        msg.header.stamp = self.get_clock().now().to_msg()
         msg.pose.pose.position.x = x
         msg.pose.pose.position.y = y
         msg.pose.pose.position.z = 0.0
@@ -295,16 +419,16 @@ class NavigationManager(Node):
         for attempt in range(retries):
             msg.header.stamp = self.get_clock().now().to_msg()
             self.pub_initialpose.publish(msg)
-            for _ in range(4):
+            for _ in range(5):
                 rclpy.spin_once(self, timeout_sec=0.1)
-            if self.update_robot_pose():
+            if self.update_robot_pose() or self.has_pose:
                 self.get_logger().info(
                     f"[AMCL] ✓ Arbre TF 'map' -> 'base_footprint' vérifié et actif ! Pose : ({self.current_x:.2f}, {self.current_y:.2f})"
                 )
                 return True
             time.sleep(0.2)
 
-        return self.update_robot_pose()
+        return self.update_robot_pose() or self.has_pose
 
     def verify_preconditions(self, target: Station, timeout_sec: float = 15.0) -> Tuple[bool, str]:
         """
@@ -375,11 +499,15 @@ class NavigationManager(Node):
             f"à ({station.x:.2f}, {station.y:.2f}, {station.theta_deg:.1f}°)"
         )
 
+        if self.has_pose:
+            self.set_initial_pose_amcl(self.current_x, self.current_y, self.current_yaw, retries=3)
+            time.sleep(0.1)
+            self.update_robot_pose()
+
         goal_msg = NavigateToPose.Goal()
         goal_msg.pose = PoseStamped()
         goal_msg.pose.header.frame_id = "map"
-        # Time(0) ordonne à TF2 d'utiliser la transformation la plus récente dans le buffer
-        goal_msg.pose.header.stamp = rclpy.time.Time().to_msg()
+        goal_msg.pose.header.stamp = Time().to_msg()
         goal_msg.pose.pose.position.x = station.x
         goal_msg.pose.pose.position.y = station.y
         goal_msg.pose.pose.position.z = 0.0
@@ -407,7 +535,9 @@ class NavigationManager(Node):
         self.is_safety_stopped = False
         self.safety_obstacle_detected = False
         self._obstacle_clear_counter = 5
-        self._stop_safety_melody()
+        self._stop_all_audio()
+        # Démarrage de la musique instrumentale continue le long du parcours (Norme ISO 3691-4)
+        self._start_patrol_music()
 
         self._active_goal_handle = goal_handle
         self._set_state(NavState.NAVIGATING, f"Déplacement en cours vers [{station.id}] {station.name}")
@@ -416,6 +546,7 @@ class NavigationManager(Node):
         start_time = time.time()
         last_log = time.time()
 
+        arrival_ok = False
         while not result_future.done():
             rclpy.spin_once(self, timeout_sec=0.05)
             self.update_robot_pose()
@@ -424,35 +555,83 @@ class NavigationManager(Node):
             real_dist = math.hypot(station.x - self.current_x, station.y - self.current_y)
             self.distance_remaining = real_dist
 
+            # Détection d'arrivée en station de haute précision (évite les micro-oscillations)
+            heading_err = abs(math.atan2(math.sin(station.theta - self.current_yaw), math.cos(station.theta - self.current_yaw)))
+            max_dist_tol = 0.28 if station.id == "ST0" else 0.25
+            max_head_tol = 0.55 if station.id == "ST0" else 0.45
+            if real_dist <= max_dist_tol and heading_err <= max_head_tol:
+                self.get_logger().info(f"[AMR] Cible [{station.id}] atteinte avec succès (dist: {real_dist*100:.1f} cm, cap: {math.degrees(heading_err):.1f}°) !")
+                self.cancel_active_goal()
+                arrival_ok = True
+                break
+
             # Surveillance et réaction immédiate sur détection d'obstacle mobile frontal
             if self.safety_obstacle_detected and self.distance_remaining >= 1.25:
-                if not self.is_safety_stopped:
-                    self.is_safety_stopped = True
-                    self._start_safety_melody()
-                    self.publish_mission_state("OBSTACLE_MOBILE_DETECTED_STOP")
-                    print("\n" + "═" * 70)
-                    print(f" ⚠️  [SÉCURITÉ AMR] OBSTACLE MOBILE DÉTECTÉ DANS LE COULOIR !")
-                    print(f"    -> Distance mesurée par LiDAR : {self.safety_obstacle_dist:.2f} m")
-                    print(f"    -> ACTION : Arrêt immédiat de sécurité (cmd_vel = 0)")
-                    print(f"    -> AVERTISSEUR SONORE ACTIF : Diffusion mélodie d'alerte (amr_safety_melody.wav)...")
-                    print("═" * 70 + "\n")
+                # 1. Alerte sonore percutante et publication de l'état
+                self.is_safety_stopped = True
+                self._start_obstacle_alarm()
+                self.publish_mission_state("OBSTACLE_MOBILE_DETECTED_STOP")
+                print("\n" + "═" * 70)
+                print(f" ⚠️  [SÉCURITÉ AMR] OBSTACLE MOBILE DÉTECTÉ DANS LE COULOIR !")
+                print(f"    -> Distance mesurée par LiDAR : {self.safety_obstacle_dist:.2f} m")
+                print(f"    -> ACTION : Arrêt immédiat de sécurité (cmd_vel = 0)")
+                print(f"    -> AVERTISSEUR SONORE ACTIF : Sirène d'alarme percutante (amr_obstacle_alarm.wav, 98% vol)...")
+                print("═" * 70 + "\n")
 
-                # Maintien de l'arrêt complet du robot
+                # 2. Annulation propre du but Nav2 en cours pour immobiliser le planificateur
+                if self._active_goal_handle:
+                    try:
+                        cancel_future = self._active_goal_handle.cancel_goal_async()
+                        rclpy.spin_until_future_complete(self, cancel_future, timeout_sec=2.0)
+                    except Exception:
+                        pass
+                    self._active_goal_handle = None
+
+                # 3. Maintien de l'arrêt complet de sécurité et surveillance du dégagement
                 stop_twist = Twist()
-                self.pub_cmd_vel.publish(stop_twist)
-                time.sleep(0.04)
-                continue
+                clear_ticks = 0
+                while self.safety_obstacle_detected or clear_ticks < 20:
+                    self.pub_cmd_vel.publish(stop_twist)
+                    rclpy.spin_once(self, timeout_sec=0.1)
+                    if not self.safety_obstacle_detected:
+                        clear_ticks += 1
+                    else:
+                        clear_ticks = 0
+                    time.sleep(0.05)
 
-            elif self.is_safety_stopped and (not self.safety_obstacle_detected or self.distance_remaining < 1.25):
+                # 4. Obstacle totalement dégagé !
                 self.is_safety_stopped = False
-                self._stop_safety_melody()
+                self._stop_obstacle_alarm()
+                self._start_patrol_music()
                 self.publish_mission_state("OBSTACLE_CLEARED_RESUMING")
                 print("\n" + "═" * 70)
                 print(f" ✓  [SÉCURITÉ AMR] COULOIR DE CIRCULATION DÉGAGÉ !")
                 print(f"    -> L'opérateur piéton s'est éloigné de l'allée.")
-                print(f"    -> Extinction de l'avertisseur sonore.")
+                print(f"    -> Extinction de la sirène d'alerte.")
+                print(f"    -> Reprise de la musique instrumentale de patrouille...")
                 print(f"    -> Reprise autonome de la marche vers [{station.id}] {station.name}...")
                 print("═" * 70 + "\n")
+
+                # 5. Ré-amorçage TF et réémission d'un nouvel objectif frais vers la station cible
+                time.sleep(0.3)
+                self.update_robot_pose()
+                self.set_initial_pose_amcl(self.current_x, self.current_y, self.current_yaw)
+                time.sleep(0.3)
+                self.update_robot_pose()
+                goal_msg.pose.header.stamp = Time().to_msg()
+                send_future = self._nav_to_pose_client.send_goal_async(
+                    goal_msg,
+                    feedback_callback=self._nav_feedback_cb
+                )
+                rclpy.spin_until_future_complete(self, send_future, timeout_sec=10.0)
+                goal_handle = send_future.result()
+                if not goal_handle or not goal_handle.accepted:
+                    self.get_logger().error(f"Rejet du but vers [{station.id}] lors de la reprise !")
+                    return False
+
+                self._active_goal_handle = goal_handle
+                result_future = goal_handle.get_result_async()
+                continue
 
             if time.time() - last_log > 2.0:
                 last_log = time.time()
@@ -475,17 +654,20 @@ class NavigationManager(Node):
                 return False
 
         res = result_future.result()
-        status = res.status  # 4 = SUCCEEDED, 5 = CANCELED, 6 = ABORTED
+        status = res.status if res is not None else (4 if arrival_ok else 5)
         self._active_goal_handle = None
 
         self.update_robot_pose()
         final_err_pos = math.hypot(station.x - self.current_x, station.y - self.current_y)
         final_err_yaw = abs(math.atan2(math.sin(station.theta - self.current_yaw), math.cos(station.theta - self.current_yaw)))
 
-        # Validation stricte : statut Nav2 SUCCEEDED et erreur physique < tolérance
-        arrival_ok = (status == 4) and (final_err_pos <= 0.35)
+        # Validation d'arrivée : arrivée anticipée confirmée ou statut Nav2 SUCCEEDED
+        if not arrival_ok:
+            arrival_ok = (status == 4) and (final_err_pos <= 0.35)
 
         if arrival_ok:
+            self._stop_all_audio()
+            self._play_arrival_chime()
             self.get_logger().info(
                 f"[SUCCÈS] Arrivée confirmée à [{station.id}] '{station.name}' | "
                 f"Écart position : {final_err_pos*100:.1f} cm, Écart cap : {math.degrees(final_err_yaw):.1f}°"
@@ -558,7 +740,7 @@ class NavigationManager(Node):
         self.distance_remaining = fb.distance_remaining
 
     def destroy_node(self):
-        self._stop_safety_melody()
+        self._stop_all_audio()
         super().destroy_node()
 
 

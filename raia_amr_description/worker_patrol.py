@@ -43,10 +43,10 @@ class WorkerPatrolNode(Node):
         # ── Paramètres cinématiques de marche
         self.y_aisle: float = -1.60
         self.z_ground: float = 0.0
-        self.x_start: float = 1.50
-        self.x_end: float = -1.50
+        self.x_start: float = 1.60
+        self.x_end: float = -2.80
         self.current_x: float = self.x_start
-        self.walk_speed: float = 0.32  # m/s (marche normale d'atelier)
+        self.walk_speed: float = 0.60  # m/s (marche dynamique d'opérateur d'atelier)
 
         self.is_crossing: bool = False
         self.has_completed_cross: bool = False
@@ -59,6 +59,11 @@ class WorkerPatrolNode(Node):
         self.sub_amcl = self.create_subscription(
             PoseWithCovarianceStamped, "/amcl_pose", self._amcl_cb, 10
         )
+        self.sub_odom = self.create_subscription(
+            Odometry, "/odom", self._odom_cb, 10
+        )
+
+        self.mission_start_time: Optional[float] = None
 
         # ── Timer d'animation à 20 Hz
         self.timer = self.create_timer(0.05, self._patrol_tick)
@@ -68,21 +73,29 @@ class WorkerPatrolNode(Node):
         )
 
     def _mission_state_cb(self, msg: String):
-        # Dès que l'AMR part vers ST1, on arme la traversée
+        # Dès que l'AMR part vers ST1, on arme le compte à rebours de traversée
         if "NAVIGATING_TO_ST1" in msg.data or "MISSION_DISPATCHED" in msg.data:
             if not self.has_completed_cross and not self.is_crossing:
                 self.trigger_received = True
+                if self.mission_start_time is None:
+                    self.mission_start_time = time.time()
+                    self.get_logger().info("[WORKER PATROL] Signal de mission reçu. Début du compte à rebours piéton.")
 
-    def _amcl_cb(self, msg: PoseWithCovarianceStamped):
-        # Déclenchement basé sur la position exacte de l'AMR :
-        # Quand l'AMR quitte ST0 (y=-3.8) et atteint y >= -2.60 m (à ~1 m du couloir du piéton)
-        robot_y = msg.pose.pose.position.y
-        robot_x = msg.pose.pose.position.x
-        if robot_y >= -2.60 and robot_y <= -1.00 and not self.has_completed_cross and not self.is_crossing:
+    def _check_and_trigger(self, robot_y: float):
+        if self.has_completed_cross or self.is_crossing:
+            return
+        # Si le robot quitte ST0 (y=-3.80) et arrive à y >= -2.75 m (à ~1.15 m de l'allée)
+        if robot_y >= -2.75 and robot_y <= -1.00:
             self.get_logger().info(
                 f"[WORKER PATROL] AMR détecté à l'approche de l'allée (y={robot_y:.2f}) -> Début de la traversée piéton !"
             )
             self.is_crossing = True
+
+    def _amcl_cb(self, msg: PoseWithCovarianceStamped):
+        self._check_and_trigger(msg.pose.pose.position.y)
+
+    def _odom_cb(self, msg: Odometry):
+        self._check_and_trigger(msg.pose.pose.position.y)
 
     def set_worker_pose(self, x: float, y: float, yaw: float = 3.14159):
         if not self.set_state_client.service_is_ready():
@@ -104,10 +117,11 @@ class WorkerPatrolNode(Node):
     def _patrol_tick(self):
         # Initialisation ou maintien à la pose de départ si pas encore déclenché
         if not self.is_crossing and not self.has_completed_cross:
-            # Si le déclencheur d'état est reçu mais pas encore la position, démarrer après 4s
-            if self.trigger_received:
-                self.is_crossing = True
-                self.get_logger().info("[WORKER PATROL] Déclenchement automatique de la traversée de l'employeur !")
+            # Sécurité de déclenchement temporel : 4.5s après l'ordre de mission
+            if self.trigger_received and self.mission_start_time is not None:
+                if (time.time() - self.mission_start_time) >= 4.5:
+                    self.is_crossing = True
+                    self.get_logger().info("[WORKER PATROL] Déclenchement automatique de la traversée de l'employeur (4.5s écoulées) !")
             return
 
         if self.is_crossing:

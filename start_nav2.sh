@@ -25,12 +25,11 @@ MAP_PATH="${1:-$HOME/ros2_ws/src/raia_amr_description/maps/raia_factory_map.yaml
 echo -e "\n${YELLOW}[1/5] Nettoyage et configuration environnement WSLg...${NC}"
 killall -9 gzserver gzclient robot_state_publisher component_container_isolated component_container rviz2 python3 2>/dev/null || true
 rm -f /dev/shm/fastrtps_* /dev/shm/sem.fastrtps_* 2>/dev/null || true
-export GALLIUM_DRIVER=llvmpipe
-export LIBGL_ALWAYS_SOFTWARE=1
+export MESA_D3D12_DEFAULT_ADAPTER_NAME=Intel
 export GAZEBO_MODEL_DATABASE_URI=""
 export FASTRTPS_DEFAULT_PROFILES_FILE=$HOME/fastdds_udp_only.xml
 echo -e "${GREEN}    ✓ Processus orphelins nettoyés${NC}"
-echo -e "${GREEN}    ✓ Rendu logiciel LLVMpipe activé${NC}"
+echo -e "${GREEN}    ✓ Accélération matérielle GPU D3D12 activée${NC}"
 
 # ── 2. Source ROS2 + workspace ──────────────────────────────────
 echo -e "\n${YELLOW}[2/5] Sourcing ROS2 Humble + workspace...${NC}"
@@ -71,6 +70,10 @@ cd ~/ros2_ws
 colcon build --symlink-install --packages-select raia_amr_description 2>&1 | tail -5
 source ~/ros2_ws/install/setup.bash
 echo -e "${GREEN}    ✓ Package raia_amr_description compilé et prêt${NC}"
+
+# Inscription des obstacles fixes et zones interdites (Keep-Out Zones) sur la carte
+echo -e "\n${YELLOW}Application des obstacles fixes et zones d'exclusion sur la carte...${NC}"
+python3 "$PKG_SRC/apply_fixed_obstacles_and_keepout.py"
 
 # ── 5. Instructions de navigation ───────────────────────────────
 echo -e "\n${YELLOW}[5/5] Démarrage de la navigation autonome...${NC}"

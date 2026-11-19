@@ -33,8 +33,12 @@ colcon build --symlink-install --packages-select raia_amr_description > /dev/nul
 source ~/ros2_ws/install/setup.bash
 cd ~/ros2_ws/src/raia_amr_description
 
-# 3. Lancement de la simulation + Nav2
-echo -e "\n${YELLOW}[2/4] Démarrage de Gazebo, RViz2 et de la pile Nav2...${NC}"
+# 3. Inscription des obstacles fixes et zones interdites (Keep-Out Zones) sur la carte
+echo -e "\n${YELLOW}[2/5] Inscription des obstacles fixes et champs interdits sur la carte...${NC}"
+python3 ~/ros2_ws/src/raia_amr_description/apply_fixed_obstacles_and_keepout.py
+
+# 4. Lancement de la simulation + Nav2
+echo -e "\n${YELLOW}[3/5] Démarrage de Gazebo, RViz2 et de la pile Nav2...${NC}"
 MAP_PATH="${1:-$HOME/ros2_ws/src/raia_amr_description/maps/raia_factory_map.yaml}"
 LOG_FILE="/tmp/nav2_launch.log"
 rm -f "$LOG_FILE"
@@ -44,7 +48,7 @@ LAUNCH_PID=$!
 
 cleanup() {
     echo -e "\n${YELLOW}Fermeture de la simulation et arrêt des nœuds...${NC}"
-    kill -9 $LAUNCH_PID 2>/dev/null || true
+    kill -9 $LAUNCH_PID $WORKER_PID $WEB_PID 2>/dev/null || true
     killall -9 gzserver gzclient robot_state_publisher component_container_isolated component_container rviz2 python3 2>/dev/null || true
     exit 0
 }
@@ -81,7 +85,20 @@ fi
 # Pause de stabilisation de la physique Gazebo et amorçage du filtre AMCL
 sleep 6
 
-# 5. Déclenchement automatique de la mission
+# 5. Démarrage du serveur web industriel de supervision & gestion de flotte
+echo -e "\n${YELLOW}Démarrage de l'interface Web industrielle de supervision (port 8080)...${NC}"
+python3 ~/ros2_ws/src/raia_amr_description/web_server.py 8080 > /dev/null 2>&1 &
+WEB_PID=$!
+sleep 1
+ROBOT_IP=$(hostname -I | awk '{print $1}')
+echo -e "${GREEN}    ✓ Interface Web active : http://localhost:8080 ou http://${ROBOT_IP}:8080${NC}"
+
+# 6. Démarrage de l'animateur piéton d'atelier (Obstacle mobile)
+python3 ~/ros2_ws/src/raia_amr_description/worker_patrol.py > /dev/null 2>&1 &
+WORKER_PID=$!
+sleep 1
+
+# 7. Déclenchement automatique de la mission
 echo -e "\n${YELLOW}[4/4] Lancement automatique de la mission inter-lignes...${NC}"
 python3 -u ~/ros2_ws/src/raia_amr_description/run_mission.py
 

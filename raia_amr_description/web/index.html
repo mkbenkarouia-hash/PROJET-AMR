@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAIA AMR 4.0 — Interface de Supervision & Gestion de Flotte</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0F172A;
+      --bg-card: #1E293B;
+      --bg-card-hover: #334155;
+      --border-color: #334155;
+      --primary: #3B82F6;
+      --primary-hover: #2563EB;
+      --accent: #06B6D4;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --danger-glow: rgba(239, 68, 68, 0.4);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --radius: 12px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    header {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #2563EB, #06B6D4);
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      letter-spacing: 1px;
+    }
+
+    .title-group h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0B132B;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid var(--border-color);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.danger {
+      background: var(--danger);
+      box-shadow: 0 0 12px var(--danger);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.15); }
+    }
+
+    .btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--primary);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+      font-weight: 700;
+    }
+
+    .btn-danger:hover {
+      background: #DC2626;
+      box-shadow: 0 0 15px var(--danger-glow);
+    }
+
+    /* ── Main Container ────────────────────────────────── */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (max-width: 1100px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Map Container ─────────────────────────────────── */
+    .map-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    .card-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Barre d'outils de cartographie */
+    .map-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 16px;
+      background: #131E32;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tool-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .tool-btn:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .tool-btn.active {
+      background: #1D4ED8;
+      border-color: #3B82F6;
+      color: white;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .canvas-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: #0B1120;
+      position: relative;
+      overflow: auto;
+    }
+
+    #mapCanvas {
+      background: #0B1120;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      cursor: crosshair;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+      image-rendering: pixelated;
+    }
+
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 10px 20px;
+      background: rgba(15, 23, 42, 0.6);
+      border-top: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* ── Sidebar Panels ────────────────────────────────── */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Pilotage Manuel (D-Pad) */
+    .dpad-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .dpad-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dpad-btn {
+      width: 58px;
+      height: 52px;
+      background: #24344D;
+      border: 1px solid #3A506B;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.1s;
+    }
+
+    .dpad-btn:hover {
+      background: #2D4263;
+      border-color: var(--primary);
+    }
+
+    .dpad-btn:active, .dpad-btn.pressed {
+      background: var(--primary);
+      transform: scale(0.95);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.7);
+    }
+
+    .dpad-stop {
+      background: #7F1D1D;
+      border-color: #991B1B;
+      color: #FECACA;
+    }
+
+    .dpad-stop:hover {
+      background: #991B1B;
+    }
+
+    .slider-group {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    /* Missions & Stations */
+    .station-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .station-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #182234;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .station-btn:hover {
+      background: #223048;
+      border-color: var(--accent);
+      transform: translateX(3px);
+    }
+
+    .station-btn .st-id {
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .station-btn .st-name {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Télémétrie */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .telemetry-item {
+      background: #111A2C;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .telemetry-item .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .telemetry-item .value {
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #38BDF8;
+    }
+
+    /* Audio Banner */
+    .audio-card {
+      background: linear-gradient(135deg, #1E293B, #0F172A);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .audio-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .audio-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .audio-pill.melody {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      border: 1px solid #059669;
+    }
+
+    .audio-pill.alarm {
+      background: rgba(239, 68, 68, 0.25);
+      color: #F87171;
+      border: 1px solid #DC2626;
+      animation: alertPulse 0.6s infinite alternate;
+    }
+
+    @keyframes alertPulse {
+      0% { box-shadow: 0 0 5px var(--danger-glow); }
+      100% { box-shadow: 0 0 18px var(--danger-glow); }
+    }
+
+    /* Modal Guide Réseau */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      max-width: 680px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-box h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent);
+    }
+
+    .modal-box p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .hardware-spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .hardware-spec-table th, .hardware-spec-table td {
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .hardware-spec-table th {
+      background: #111A2C;
+      color: var(--text-main);
+    }
+
+    .hardware-spec-table td {
+      background: rgba(15, 23, 42, 0.3);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ────────────────────────────────────────── -->
+  <header>
+    <div class="brand">
+      <div class="logo-badge">RAIA 4.0</div>
+      <div class="title-group">
+        <h1>AMR FLEET SUPERVISION & TELEOP</h1>
+        <p>Atelier CMS Industriel | factory_workshop.world (Rapport 01.26)</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="status-badge">
+        <span class="status-dot" id="liveDot"></span>
+        <span id="robotStateText">CONNEXION EN COURS...</span>
+      </div>
+
+      <button class="btn" onclick="openNetworkModal()">
+        🌐 Guide Connexion IP
+      </button>
+
+      <button class="btn btn-danger" onclick="sendEmergencyStop()">
+        🛑 E-STOP
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main Grid ─────────────────────────────────────── -->
+  <main>
+    <!-- Zone Cartographie Canvas -->
+    <div class="map-card">
+      <div class="card-header">
+        <h2>🗺️ Cartographie de l'Usine (OGM 202×202 | 0.05 m/px)</h2>
+        <div style="font-size: 12px; color: var(--text-muted);">
+          Origine: [-5.05, -5.05] m | Surface: 10×10 m
+        </div>
+      </div>
+
+      <!-- Barre d'outils de modification de cartographie -->
+      <div class="map-toolbar">
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); align-self: center; margin-right: 4px;">ÉDITEUR :</span>
+        <button class="tool-btn active" id="toolView" onclick="setEditTool('view')">
+          👁️ Navigation Seule
+        </button>
+        <button class="tool-btn" id="toolKeepout" onclick="setEditTool('keepout')">
+          🚫 Zone Interdite (Keep-Out)
+        </button>
+        <button class="tool-btn" id="toolObstacle" onclick="setEditTool('obstacle')">
+          📦 Obstacle Fixe / Débarras
+        </button>
+        <button class="tool-btn" id="toolEraser" onclick="setEditTool('eraser')">
+          🧹 Gomme (Dégagement)
+        </button>
+        <button class="tool-btn btn-primary" onclick="saveMapModifications()" style="margin-left: auto;">
+          💾 Sauvegarder & Appliquer
+        </button>
+        <button class="tool-btn" onclick="resetMapToBaseline()">
+          🔄 Réinitialiser Carte
+        </button>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="mapCanvas" width="606" height="606"></canvas>
+      </div>
+
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-swatch" style="background: #10B981;"></div> ST0 (Recharge MiR)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: #3B82F6;"></div> ST1 (Sérigraphie MPM)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: #8B5CF6;"></div> ST2 (Convoyeur PCB)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: #F59E0B;"></div> ST3 (Four ICT)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: #0284C7;"></div> Robot AMR</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: #E11D48;"></div> Chariot Maintenance (Obstacle Fixe)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: rgba(239, 68, 68, 0.45); border: 1px dashed #EF4444;"></div> 🚫 Champs Interdits (Keep-Out)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: #10B981; border: 1px dotted #34D399;"></div> Rayons LiDAR Hokuyo</div>
+        <div class="legend-item"><div class="legend-swatch" style="background: rgba(239, 68, 68, 0.4); border: 1px dashed red;"></div> Zones Interdites Peintes</div>
+      </div>
+    </div>
+
+    <!-- Sidebar : Contrôles & Télémétrie -->
+    <div class="sidebar">
+
+      <!-- Panel Pilotage Manuel (D-pad) -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>🕹️ Pilotage Manuel (Téléopération)</span>
+          <span style="font-size: 11px; color: var(--accent);">ZQSD / Flèches</span>
+        </div>
+
+        <div class="dpad-container">
+          <div class="dpad-row">
+            <button class="dpad-btn" id="btnUp" onmousedown="startDriving(0.35, 0)" onmouseup="stopDriving()" ontouchstart="startDriving(0.35, 0)" ontouchend="stopDriving()">▲</button>
+          </div>
+          <div class="dpad-row">
+            <button class="dpad-btn" id="btnLeft" onmousedown="startDriving(0, 0.8)" onmouseup="stopDriving()" ontouchstart="startDriving(0, 0.8)" ontouchend="stopDriving()">◀</button>
+            <button class="dpad-btn dpad-stop" onclick="sendEmergencyStop()">■</button>
+            <button class="dpad-btn" id="btnRight" onmousedown="startDriving(0, -0.8)" onmouseup="stopDriving()" ontouchstart="startDriving(0, -0.8)" ontouchend="stopDriving()">▶</button>
+          </div>
+          <div class="dpad-row">
+            <button class="dpad-btn" id="btnDown" onmousedown="startDriving(-0.25, 0)" onmouseup="stopDriving()" ontouchstart="startDriving(-0.25, 0)" ontouchend="stopDriving()">▼</button>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <label><span>Vitesse linéaire maximale :</span> <span id="linVal">0.35 m/s</span></label>
+          <input type="range" id="linSlider" min="0.10" max="0.55" step="0.05" value="0.35" oninput="updateSpeedLimits()">
+        </div>
+      </div>
+
+      <!-- Panel Ordres de Mission & Postes -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>🏭 Ordres de Mission & Lignes</span>
+          <span style="font-size: 10px; color: var(--text-muted);">DISPATCHER</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="dispatchMission('AUTO')" style="width: 100%; margin-bottom: 10px; justify-content: center; padding: 10px;">
+          🚀 Lancer Cycle Complet (ST0 -> ST1 -> ST2 -> ST0)
+        </button>
+
+        <div class="station-list">
+          <div class="station-btn" onclick="dispatchMission('ST1')">
+            <div>
+              <div class="st-id">ST1 — Sérigraphie MPM Momentum</div>
+              <div class="st-name">Prise de carte PCB imprimée (x=1.8, y=0.65)</div>
+            </div>
+            <span>➡️</span>
+          </div>
+          <div class="station-btn" onclick="dispatchMission('ST2')">
+            <div>
+              <div class="st-id">ST2 — Quai Convoyeur & Transfert</div>
+              <div class="st-name">Dépose de carte PCB sur rouleaux (x=-1.8, y=0.65)</div>
+            </div>
+            <span>➡️</span>
+          </div>
+          <div class="station-btn" onclick="dispatchMission('ST0')">
+            <div>
+              <div class="st-id">ST0 — Station MiR Charge (Docking)</div>
+              <div class="st-name">Retour à la borne de recharge (x=0.0, y=-3.8)</div>
+            </div>
+            <span>➡️</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Monitoring Audio Bimodal -->
+      <div class="audio-card">
+        <div class="audio-status-row">
+          <div style="font-size: 13px; font-weight: 600;">🔊 Avertisseur Sonore Bimodal (ISO 3691-4)</div>
+          <div class="audio-pill melody" id="audioPill">MÉLODIE DOUCE (40%)</div>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+          • <strong>Transit normal :</strong> Musique instrumentale synthétisée douce.<br>
+          • <strong>Obstacle détecté :</strong> Sirène percutante deux-tons 98% vol (+10 dB).
+        </p>
+        <button class="btn" id="audioToggleBtn" onclick="toggleWebAudio()" style="justify-content: center; font-size: 12px;">
+          🔈 Écouter l'Audio du Robot dans le Navigateur
+        </button>
+      </div>
+
+      <!-- Panel Télémétrie & Capteurs -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>📊 Télémétrie Temps Réel</span>
+          <span style="font-size: 10px; color: var(--success);" id="commRate">5 Hz</span>
+        </div>
+
+        <div class="telemetry-grid">
+          <div class="telemetry-item">
+            <div class="label">Position X, Y (m)</div>
+            <div class="value" id="valPos">0.00, -3.80</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Cap Robot (Yaw)</div>
+            <div class="value" id="valYaw">90.0°</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Vitesse Lin / Ang</div>
+            <div class="value" id="valVel">0.00 m/s</div>
+          </div>
+          <div class="telemetry-item">
+            <div class="label">Batterie / Tension</div>
+            <div class="value" style="color: #34D399;" id="valBatt">100% (24.3V)</div>
+          </div>
+          <div class="telemetry-item" style="grid-column: span 2;">
+            <div class="label">Obstacle Mobile Couloir</div>
+            <div class="value" id="valObstacle" style="color: #10B981;">Aucun obstacle</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── Modal Guide de Connexion Réseau & Matériel ───── -->
+  <div class="modal-overlay" id="networkModal" onclick="closeNetworkModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <h2>🌐 Guide de Connexion & Architecture Réseau du Robot</h2>
+      <p>
+        Pour se connecter à l'interface de contrôle du robot industriel <strong>RAIA AMR 4.0</strong>, 
+        l'opérateur ou le technicien doit simplement se trouver sur le réseau de l'atelier.
+      </p>
+
+      <table class="hardware-spec-table">
+        <thead>
+          <tr>
+            <th>Composant Embarqué</th>
+            <th>Modèle & Spécifications Industrielles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Module Wi-Fi 6 Embarqué</strong></td>
+            <td><strong>Moxa AWK-3252A</strong> (Client industriel IEEE 802.11ax / WPA3-Enterprise, Roaming sans perte &lt; 50 ms)</td>
+          </tr>
+          <tr>
+            <td><strong>Routeur 5G de Secours</strong></td>
+            <td><strong>Teltonika RUTX50</strong> (Réseau privé 5G Standalone Usine 4.0, failover automatique)</td>
+          </tr>
+          <tr>
+            <td><strong>Antennes Châssis</strong></td>
+            <td>Double antenne omnidirectionnelle à fort gain (5 dBi) montées sur la superstructure haute du robot</td>
+          </tr>
+          <tr>
+            <td><strong>Liaison au PC Embarqué</strong></td>
+            <td>Câble blindé M12 / RJ45 Gigabit Ethernet relié au port eth0 de l'unité de calcul (Ubuntu 22.04 LTS / ROS2 Humble)</td>
+          </tr>
+          <tr>
+            <td><strong>Adresse IP du Robot</strong></td>
+            <td><code id="modalRobotIp">192.168.1.50</code> (ou nom d'hôte local : <code>http://raia-amr.local:8080</code>)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size: 14px; margin-top: 14px; margin-bottom: 8px; color: var(--text-main);">📋 Procédure de Connexion Opérateur :</h3>
+      <ol style="font-size: 13px; color: var(--text-muted); line-height: 1.6; padding-left: 20px;">
+        <li>Connectez votre appareil (Tablette durcie, PC superviseur, smartphone d'atelier) au réseau Wi-Fi <strong>"FACTORY_INDUSTRY_4.0"</strong>.</li>
+        <li>Ouvrez votre navigateur favori (Google Chrome, Safari, Microsoft Edge, Firefox).</li>
+        <li>Tapez dans la barre d'adresse : <strong style="color: var(--accent);" id="modalUrlText">http://localhost:8080</strong></li>
+        <li>Le tableau de bord se charge immédiatement sans aucune installation requise.</li>
+      </ol>
+
+      <div style="margin-top: 20px; text-align: right;">
+        <button class="btn btn-primary" onclick="closeNetworkModal()">Compris / Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Logique JavaScript & Web Audio ──────────────── -->
+  <script>
+    // Variables globales
+    const canvas = document.getElementById("mapCanvas");
+    const ctx = canvas.getContext("2d");
+    const C_WIDTH = canvas.width;
+    const C_HEIGHT = canvas.height;
+
+    // Métadonnées de l'OGM (10x10 m, origin [-5.05, -5.05])
+    const mapOriginX = -5.05;
+    const mapOriginY = -5.05;
+    const mapResolution = 0.05; // m/px (202x202)
+    const mapPixels = 202;
+
+    let mapImage = new Image();
+    let mapLoaded = false;
+
+    // État local AMR
+    let robotData = {
+      x: 0.0,
+      y: -3.80,
+      yaw: 1.5708,
+      yaw_deg: 90.0,
+      linear_vel: 0.0,
+      angular_vel: 0.0,
+      state: "DOCKED_CHARGING",
+      current_target: "ST0 (Recharge)",
+      dist_rem: 0.0,
+      obstacle_detected: false,
+      obstacle_dist: 999.0,
+      is_safety_stopped: false,
+      audio_state: "IDLE",
+      battery_pct: 100,
+      voltage: 24.3,
+      status_text: "En veille sur borne MiR Charge",
+      scan_points: []
+    };
+
+    // Stations
+    const stations = [
+      { id: "ST0", name: "Borne Recharge MiR", x: 0.0, y: -3.80, color: "#10B981" },
+      { id: "ST1", name: "Sérigraphie MPM (Prise PCB)", x: 1.50, y: 0.65, color: "#3B82F6" },
+      { id: "ST2", name: "Quai Convoyeur (Dépose)", x: -1.50, y: 0.65, color: "#8B5CF6" },
+      { id: "ST3", name: "Four Refusion ICT", x: 1.80, y: -0.65, color: "#F59E0B" },
+      { id: "ST4", name: "Stockage Palettes PCB", x: -2.00, y: -0.65, color: "#EC4899" }
+    ];
+
+    // Outils de modification de la cartographie
+    let currentTool = "view"; // "view", "keepout", "obstacle", "eraser"
+    let isDrawing = false;
+    let keepoutZones = [];
+    let editCanvas = document.createElement("canvas");
+    editCanvas.width = 202;
+    editCanvas.height = 202;
+    let editCtx = editCanvas.getContext("2d");
+
+    // Limites de vitesse téléop
+    let maxLinSpeed = 0.35;
+    let maxAngSpeed = 0.80;
+
+    // Web Audio Synthesizer pour retour sonore direct dans le navigateur
+    let audioCtx = null;
+    let webAudioEnabled = false;
+    let melodyInterval = null;
+    let alarmInterval = null;
+
+    // Initialisation
+    window.addEventListener("DOMContentLoaded", () => {
+      loadMapImage();
+      fetchMapInfo();
+      setInterval(fetchRobotStatus, 150); // Rafraîchissement télémétrie à ~7 Hz
+      setupKeyboardControls();
+      setupCanvasDrawing();
+      fetchNetworkInfo();
+    });
+
+    async function fetchMapInfo() {
+      try {
+        const res = await fetch("/api/map_info");
+        const data = await res.json();
+        if (data.keepout_zones) {
+          keepoutZones = data.keepout_zones;
+          renderMap();
+        }
+      } catch (e) {
+        console.warn("Impossible de charger map_info:", e);
+      }
+    }
+
+    function loadMapImage() {
+      mapImage.src = `/api/map_image?t=${Date.now()}`;
+      mapImage.onload = () => {
+        mapLoaded = true;
+        editCtx.drawImage(mapImage, 0, 0, 202, 202);
+        renderMap();
+      };
+    }
+
+    // Conversion coordonnées monde (mètres) vers canvas (pixels)
+    function worldToCanvas(wx, wy) {
+      const px = (wx - mapOriginX) / mapResolution; // 0..202
+      const py = (5.05 - wy) / mapResolution;        // 0..202 (inversé Y pour canvas)
+      return {
+        x: (px / mapPixels) * C_WIDTH,
+        y: (py / mapPixels) * C_HEIGHT
+      };
+    }
+
+    // Conversion canvas vers monde
+    function canvasToWorld(cx, cy) {
+      const px = (cx / C_WIDTH) * mapPixels;
+      const py = (cy / C_HEIGHT) * mapPixels;
+      const wx = mapOriginX + px * mapResolution;
+      const wy = 5.05 - py * mapResolution;
+      return { x: wx, y: wy };
+    }
+
+    // ── Rendu de la carte et des éléments ─────────────────
+    function renderMap() {
+      ctx.clearRect(0, 0, C_WIDTH, C_HEIGHT);
+
+      // 1. Fond de carte OGM
+      if (mapLoaded) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(editCanvas, 0, 0, C_WIDTH, C_HEIGHT);
+      }
+
+      // 2. Grille d'atelier subtile (chaque mètre)
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+      ctx.lineWidth = 1;
+      for (let x = -4; x <= 4; x += 1.0) {
+        const p1 = worldToCanvas(x, -5);
+        const p2 = worldToCanvas(x, 5);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+      for (let y = -4; y <= 4; y += 1.0) {
+        const p1 = worldToCanvas(-5, y);
+        const p2 = worldToCanvas(5, y);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+
+      // 2.bis Champs à ne pas aller vers eux (Keep-Out Zones / Zones d'exclusion ISO 3691-4)
+      if (keepoutZones && keepoutZones.length > 0) {
+        keepoutZones.forEach(kz => {
+          const pMin = worldToCanvas(kz.x_min, kz.y_max);
+          const pMax = worldToCanvas(kz.x_max, kz.y_min);
+          const kw = pMax.x - pMin.x;
+          const kh = pMax.y - pMin.y;
+          ctx.save();
+          ctx.fillStyle = kz.color || "rgba(239, 68, 68, 0.40)";
+          ctx.strokeStyle = "#EF4444";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.fillRect(pMin.x, pMin.y, kw, kh);
+          ctx.strokeRect(pMin.x, pMin.y, kw, kh);
+
+          // Hachures d'exclusion
+          ctx.strokeStyle = "rgba(239, 68, 68, 0.35)";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([]);
+          for (let h = -kh; h < kw; h += 12) {
+            ctx.beginPath();
+            ctx.moveTo(pMin.x + Math.max(0, h), pMin.y + Math.max(0, -h));
+            ctx.lineTo(pMin.x + Math.min(kw, h + kh), pMin.y + Math.min(kh, kh));
+            ctx.stroke();
+          }
+
+          // Badge textuel
+          ctx.fillStyle = "#FCA5A5";
+          ctx.font = "bold 9px JetBrains Mono";
+          ctx.textAlign = "center";
+          const label = kz.name ? kz.name.split("—")[0].trim() : "ZONE INTERDITE";
+          ctx.fillText("🚫 " + label, pMin.x + kw / 2, pMin.y + kh / 2 + 3);
+          ctx.restore();
+        });
+      }
+
+      // 3. Obstacle Fixe Connu : Chariot de maintenance au centre (0.0, 0.65)
+      const cartPos = worldToCanvas(0.0, 0.65);
+      const cartSize = (0.54 / mapResolution) * (C_WIDTH / mapPixels);
+      ctx.save();
+      ctx.fillStyle = "#E11D48";
+      ctx.strokeStyle = "#FFE4E6";
+      ctx.lineWidth = 2;
+      ctx.fillRect(cartPos.x - cartSize / 2, cartPos.y - cartSize / 2, cartSize, cartSize);
+      ctx.strokeRect(cartPos.x - cartSize / 2, cartPos.y - cartSize / 2, cartSize, cartSize);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 9px Inter";
+      ctx.textAlign = "center";
+      ctx.fillText("CHARIOT", cartPos.x, cartPos.y - cartSize / 2 - 4);
+      ctx.restore();
+
+      // 4. Passage Piéton / Couloir de transit de l'opérateur (y = -1.60)
+      const crossP1 = worldToCanvas(-1.8, -1.6);
+      const crossP2 = worldToCanvas(1.8, -1.6);
+      ctx.save();
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.35)";
+      ctx.lineWidth = 14;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(crossP1.x, crossP1.y);
+      ctx.lineTo(crossP2.x, crossP2.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. Stations industrielles
+      stations.forEach(st => {
+        const p = worldToCanvas(st.x, st.y);
+        ctx.save();
+        ctx.fillStyle = st.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = "bold 10px JetBrains Mono";
+        ctx.fillStyle = "#F8FAFC";
+        ctx.textAlign = "center";
+        ctx.fillText(st.id, p.x, p.y - 12);
+        ctx.restore();
+      });
+
+      // 6. Points LiDAR 2D autour du robot
+      if (robotData.scan_points && robotData.scan_points.length > 0) {
+        ctx.fillStyle = robotData.obstacle_detected ? "#EF4444" : "#10B981";
+        robotData.scan_points.forEach(pt => {
+          const lp = worldToCanvas(pt[0], pt[1]);
+          ctx.beginPath();
+          ctx.arc(lp.x, lp.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // 7. Robot AMR RAIA (Pose, châssis et direction)
+      const rPos = worldToCanvas(robotData.x, robotData.y);
+      const rLength = (0.60 / mapResolution) * (C_WIDTH / mapPixels);
+      const rWidth = (0.36 / mapResolution) * (C_WIDTH / mapPixels);
+
+      ctx.save();
+      ctx.translate(rPos.x, rPos.y);
+      // Inversion d'angle due à l'inversion de l'axe Y canvas
+      ctx.rotate(-robotData.yaw);
+
+      // Châssis rectangulaire bleu nuit métallisé
+      ctx.fillStyle = robotData.is_safety_stopped ? "#DC2626" : "#0284C7";
+      ctx.strokeStyle = "#38BDF8";
+      ctx.lineWidth = 2;
+      ctx.fillRect(-rLength / 2, -rWidth / 2, rLength, rWidth);
+      ctx.strokeRect(-rLength / 2, -rWidth / 2, rLength, rWidth);
+
+      // Flèche directionnelle d'orientation avant (+X)
+      ctx.fillStyle = "#FCD34D";
+      ctx.beginPath();
+      ctx.moveTo(rLength / 2 + 6, 0);
+      ctx.lineTo(rLength / 2 - 4, -5);
+      ctx.lineTo(rLength / 2 - 4, 5);
+      ctx.closePath();
+      ctx.fill();
+
+      // Capteur LiDAR central (cylindre cyan)
+      ctx.fillStyle = "#06B6D4";
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // ── Récupération de la télémétrie robot ──────────────
+    async function fetchRobotStatus() {
+      try {
+        const res = await fetch("/api/status");
+        if (!res.ok) return;
+        const data = await res.json();
+        robotData = data;
+
+        // Mise à jour de l'UI
+        document.getElementById("valPos").textContent = `${data.x.toFixed(2)}, ${data.y.toFixed(2)}`;
+        document.getElementById("valYaw").textContent = `${data.yaw_deg.toFixed(1)}°`;
+        document.getElementById("valVel").textContent = `${data.linear_vel.toFixed(2)} m/s`;
+        document.getElementById("valBatt").textContent = `${data.battery_pct}% (${data.voltage.toFixed(1)}V)`;
+
+        const stateBadge = document.getElementById("robotStateText");
+        const liveDot = document.getElementById("liveDot");
+        stateBadge.textContent = data.state || "EN SERVICE";
+
+        const obstElem = document.getElementById("valObstacle");
+        const audioPill = document.getElementById("audioPill");
+
+        if (data.is_safety_stopped || data.obstacle_detected) {
+          liveDot.className = "status-dot danger";
+          obstElem.textContent = `DÉTECTÉ à ${data.obstacle_dist.toFixed(2)} m (ARRÊT)`;
+          obstElem.style.color = "#EF4444";
+          audioPill.textContent = "ALARME PERCUTANTE (98%)";
+          audioPill.className = "audio-pill alarm";
+          playAlarmSoundWeb();
+        } else {
+          liveDot.className = "status-dot";
+          obstElem.textContent = "Couloir libre (OK)";
+          obstElem.style.color = "#10B981";
+          if (data.audio_state === "PATROL_MELODY") {
+            audioPill.textContent = "MÉLODIE DOUCE (40%)";
+            audioPill.className = "audio-pill melody";
+            playMelodySoundWeb();
+          } else {
+            audioPill.textContent = "VEILLE / IDLE";
+            audioPill.className = "audio-pill";
+            stopWebAudio();
+          }
+        }
+
+        renderMap();
+      } catch (e) {
+        document.getElementById("robotStateText").textContent = "DÉCONNECTÉ";
+        document.getElementById("liveDot").className = "status-dot danger";
+      }
+    }
+
+    // ── Commandes de Téléopération ───────────────────────
+    let driveInterval = null;
+
+    function startDriving(lin, ang) {
+      sendTeleopCmd(lin, ang);
+      if (driveInterval) clearInterval(driveInterval);
+      driveInterval = setInterval(() => {
+        sendTeleopCmd(lin, ang);
+      }, 100);
+    }
+
+    function stopDriving() {
+      if (driveInterval) {
+        clearInterval(driveInterval);
+        driveInterval = null;
+      }
+      sendTeleopCmd(0, 0);
+    }
+
+    async function sendTeleopCmd(lin, ang) {
+      try {
+        await fetch("/api/teleop", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ linear: lin, angular: ang })
+        });
+      } catch (e) {}
+    }
+
+    async function sendEmergencyStop() {
+      stopDriving();
+      try {
+        await fetch("/api/stop", { method: "POST" });
+      } catch (e) {}
+    }
+
+    async function dispatchMission(stId) {
+      try {
+        await fetch("/api/station", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ station: stId })
+        });
+      } catch (e) {}
+    }
+
+    function updateSpeedLimits() {
+      maxLinSpeed = parseFloat(document.getElementById("linSlider").value);
+      document.getElementById("linVal").textContent = `${maxLinSpeed.toFixed(2)} m/s`;
+    }
+
+    // Contrôles clavier ZQSD / Flèches
+    function setupKeyboardControls() {
+      const activeKeys = {};
+      window.addEventListener("keydown", (e) => {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "z", "s", "q", "d", " "].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+        }
+        activeKeys[e.key.toLowerCase()] = true;
+        handleKeyDrive(activeKeys);
+      });
+
+      window.addEventListener("keyup", (e) => {
+        delete activeKeys[e.key.toLowerCase()];
+        handleKeyDrive(activeKeys);
+      });
+    }
+
+    function handleKeyDrive(keys) {
+      let lin = 0;
+      let ang = 0;
+
+      if (keys["arrowup"] || keys["z"] || keys["w"]) lin += maxLinSpeed;
+      if (keys["arrowdown"] || keys["s"]) lin -= maxLinSpeed * 0.7;
+      if (keys["arrowleft"] || keys["q"] || keys["a"]) ang += maxAngSpeed;
+      if (keys["arrowright"] || keys["d"]) ang -= maxAngSpeed;
+      if (keys[" "]) {
+        sendEmergencyStop();
+        return;
+      }
+
+      if (lin !== 0 || ang !== 0) {
+        sendTeleopCmd(lin, ang);
+      } else {
+        sendTeleopCmd(0, 0);
+      }
+    }
+
+    // ── Éditeur de Cartographie Interactif ────────────────
+    function setEditTool(tool) {
+      currentTool = tool;
+      ["toolView", "toolKeepout", "toolObstacle", "toolEraser"].forEach(id => {
+        document.getElementById(id).classList.remove("active");
+      });
+      if (tool === "view") document.getElementById("toolView").classList.add("active");
+      if (tool === "keepout") document.getElementById("toolKeepout").classList.add("active");
+      if (tool === "obstacle") document.getElementById("toolObstacle").classList.add("active");
+      if (tool === "eraser") document.getElementById("toolEraser").classList.add("active");
+    }
+
+    function setupCanvasDrawing() {
+      canvas.addEventListener("mousedown", (e) => {
+        if (currentTool === "view") return;
+        isDrawing = true;
+        drawOnMap(e);
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (!isDrawing || currentTool === "view") return;
+        drawOnMap(e);
+      });
+
+      window.addEventListener("mouseup", () => {
+        isDrawing = false;
+      });
+    }
+
+    function drawOnMap(e) {
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      // Conversion vers les coordonnées de l'image PGM (202x202)
+      const px = Math.floor((cx / C_WIDTH) * mapPixels);
+      const py = Math.floor((cy / C_HEIGHT) * mapPixels);
+
+      const brushRadius = currentTool === "eraser" ? 6 : 4;
+
+      editCtx.beginPath();
+      editCtx.arc(px, py, brushRadius, 0, Math.PI * 2);
+
+      if (currentTool === "obstacle" || currentTool === "keepout") {
+        editCtx.fillStyle = "#000000"; // Noir = obstacle impénétrable
+      } else if (currentTool === "eraser") {
+        editCtx.fillStyle = "#FEFEFE"; // Blanc = zone libre
+      }
+      editCtx.fill();
+      renderMap();
+    }
+
+    async function saveMapModifications() {
+      const imgBase64 = editCanvas.toDataURL("image/png");
+      try {
+        const res = await fetch("/api/save_map_edits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image_base64: imgBase64 })
+        });
+        const ans = await res.json();
+        alert(ans.message || "Cartographie enregistrée avec succès !");
+        loadMapImage();
+      } catch (e) {
+        alert("Erreur lors de la sauvegarde de la carte.");
+      }
+    }
+
+    async function resetMapToBaseline() {
+      if (!confirm("Voulez-vous rétablir la carte d'usine originale ? Tous les obstacles dessinés seront effacés.")) return;
+      try {
+        const res = await fetch("/api/reset_map", { method: "POST" });
+        const ans = await res.json();
+        alert(ans.message || "Carte réinitialisée.");
+        loadMapImage();
+      } catch (e) {
+        alert("Erreur lors de la réinitialisation.");
+      }
+    }
+
+    // ── Synthétiseur Web Audio API ────────────────────────
+    function toggleWebAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      webAudioEnabled = !webAudioEnabled;
+      document.getElementById("audioToggleBtn").textContent = webAudioEnabled
+        ? "🔊 Audio Navigateur ACTIF (Cliquez pour couper)"
+        : "🔈 Écouter l'Audio du Robot dans le Navigateur";
+
+      if (!webAudioEnabled) {
+        stopWebAudio();
+      }
+    }
+
+    function playMelodySoundWeb() {
+      if (!webAudioEnabled || !audioCtx || alarmInterval) return;
+      if (melodyInterval) return;
+
+      const notes = [261.63, 329.63, 392.00, 440.00, 523.25, 440.00, 392.00, 329.63];
+      let idx = 0;
+
+      melodyInterval = setInterval(() => {
+        if (!webAudioEnabled || robotData.is_safety_stopped) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = notes[idx % notes.length];
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime); // Volume doux 40%
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.38);
+        idx++;
+      }, 420);
+    }
+
+    function playAlarmSoundWeb() {
+      if (!webAudioEnabled || !audioCtx) return;
+      if (melodyInterval) {
+        clearInterval(melodyInterval);
+        melodyInterval = null;
+      }
+      if (alarmInterval) return;
+
+      let high = false;
+      alarmInterval = setInterval(() => {
+        if (!webAudioEnabled || !robotData.is_safety_stopped) {
+          clearInterval(alarmInterval);
+          alarmInterval = null;
+          return;
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.value = high ? 1318.5 : 1046.5; // Alternance deux-tons
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime); // Volume fort 98%
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.20);
+        high = !high;
+      }, 220);
+    }
+
+    function stopWebAudio() {
+      if (melodyInterval) {
+        clearInterval(melodyInterval);
+        melodyInterval = null;
+      }
+      if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+      }
+    }
+
+    // ── Infos Réseau ─────────────────────────────────────
+    async function fetchNetworkInfo() {
+      try {
+        const res = await fetch("/api/network_info");
+        const info = await res.json();
+        document.getElementById("modalRobotIp").textContent = info.robot_ip;
+        document.getElementById("modalUrlText").textContent = `http://${info.robot_ip}:8080`;
+      } catch (e) {}
+    }
+
+    function openNetworkModal() {
+      document.getElementById("networkModal").classList.add("open");
+    }
+
+    function closeNetworkModal(e) {
+      document.getElementById("networkModal").classList.remove("open");
+    }
+  </script>
+</body>
+</html>

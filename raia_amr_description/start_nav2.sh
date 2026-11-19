@@ -71,6 +71,10 @@ colcon build --symlink-install --packages-select raia_amr_description 2>&1 | tai
 source ~/ros2_ws/install/setup.bash
 echo -e "${GREEN}    ✓ Package raia_amr_description compilé et prêt${NC}"
 
+# Inscription des obstacles fixes et zones interdites (Keep-Out Zones) sur la carte
+echo -e "\n${YELLOW}Application des obstacles fixes et zones d'exclusion sur la carte...${NC}"
+python3 "$PKG_SRC/apply_fixed_obstacles_and_keepout.py"
+
 # ── 5. Instructions de navigation ───────────────────────────────
 echo -e "\n${YELLOW}[5/5] Démarrage de la navigation autonome...${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════════${NC}"
